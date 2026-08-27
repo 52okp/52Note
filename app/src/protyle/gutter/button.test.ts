@@ -29,6 +29,16 @@ describe("genGutterBlockButtonHTML", () => {
         assert.match(html, /data-embed-id="20260817120001-embed"/);
         assert.doesNotMatch(html, /draggable="true"/);
     });
+
+    it("renders the prominent add treatment for an empty paragraph", () => {
+        const html = genGutterBlockButtonHTML({
+            ...baseOptions,
+            prominentAdd: true,
+        });
+
+        assert.match(html, /protyle-gutters__add/);
+        assert.match(html, /xlink:href="#iconAdd"/);
+    });
 });
 
 describe("canShowGutterInsert", () => {

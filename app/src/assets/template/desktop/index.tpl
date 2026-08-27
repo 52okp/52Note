@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>SiYuan</title>
+    <title>52Note</title>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
@@ -13,8 +13,8 @@
 </head>
 <body class="fn__flex-column">
 <div id="loading" class="b3-dialog b3-dialog--open">
-    <div class="b3-dialog__scrim" style="background-color: #1e1e1e"></div>
-    <img style="position: absolute;width: 24vh;" src="../../icon.svg">
+    <div class="b3-dialog__scrim" style="background-color: #ffffff"></div>
+    <img style="position: absolute;width: 24vh;" src="../../icon.png">
 </div>
 <div id="toolbar" class="toolbar fn__flex"></div>
 <div class="fn__flex-1 fn__flex">

@@ -20,7 +20,7 @@ Function AppendInstallLog
 
     ${GetTime} "" "L" $0 $1 $2 $3 $4 $5 $6
     ClearErrors
-    FileOpen $7 "$TEMP\SiYuan-install.log" a
+    FileOpen $7 "$TEMP\52Note-install.log" a
     IfErrors installLogDone
     FileSeek $7 0 END
     FileWrite $7 "$2-$1-$0 $4:$5:$6 $R9$\r$\n"
@@ -43,15 +43,15 @@ FunctionEnd
     SetOutPath "$TEMP"
     ${IfNot} ${AtLeastWin10}
         !insertmacro WriteInstallLog "installer-rejected-unsupported-windows version=${VERSION}"
-        MessageBox MB_ICONEXCLAMATION "非常抱歉，思源笔记无法在低于 Windows 10 的系统上进行安装$\n$\n\
-            Sorry, SiYuan cannot be installed on systems below Windows 10$\n"
+        MessageBox MB_ICONEXCLAMATION "非常抱歉，52Note 无法在低于 Windows 10 的系统上进行安装$\n$\n\
+            Sorry, 52Note cannot be installed on systems below Windows 10$\n"
         Quit
     ${EndIf}
 
     !insertmacro WriteInstallLog "installer-start version=${VERSION} package=$EXEPATH"
     Push $R8
     Push $R7
-    nsExec::Exec '"$SYSDIR\taskkill.exe" /F /IM "SiYuan.exe"'
+    nsExec::Exec '"$SYSDIR\taskkill.exe" /F /IM "52Note.exe"'
     Pop $R8
     nsExec::Exec '"$SYSDIR\taskkill.exe" /F /IM "SiYuan-Kernel.exe"'
     Pop $R7

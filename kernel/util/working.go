@@ -44,7 +44,7 @@ import (
 // var Mode = "dev"
 var Mode = "prod"
 
-const Ver = "3.8.1"
+const Ver = "0.1.1"
 
 // IsReleaseVer 判断是否为正式版（不含 alpha、beta、rc 等预发布标识）。
 func IsReleaseVer(ver string) bool {
@@ -288,15 +288,15 @@ func initWorkspaceDir(workspaceArg string) {
 		}
 	}
 
-	defaultWorkspaceDir := filepath.Join(HomeDir, "SiYuan")
+	defaultWorkspaceDir := filepath.Join(HomeDir, "52Note")
 	if gulu.OS.IsWindows() {
 		// 改进 Windows 端默认工作空间路径 https://github.com/siyuan-note/siyuan/issues/5622
 		if userProfile := os.Getenv("USERPROFILE"); "" != userProfile {
-			defaultWorkspaceDir = filepath.Join(userProfile, "SiYuan")
+			defaultWorkspaceDir = filepath.Join(userProfile, "52Note")
 		}
 	} else if gulu.OS.IsDarwin() {
-		// Change the initial workspace path to ~/Library/Application Support/SiYuan on macOS https://github.com/siyuan-note/siyuan/issues/17095
-		defaultWorkspaceDir = filepath.Join(HomeDir, "Library", "Application Support", "SiYuan")
+		// Change the initial workspace path to ~/Library/Application Support/52Note on macOS.
+		defaultWorkspaceDir = filepath.Join(HomeDir, "Library", "Application Support", "52Note")
 	}
 
 	var workspacePaths []string

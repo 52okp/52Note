@@ -1,8 +1,8 @@
 {
-  "name": "SiYuan",
-  "desktopName": "org.b3log.siyuan",
-  "version": "3.8.1",
-  "description": "From thought to insight, with agents",
+  "name": "52Note",
+  "desktopName": "com.note52.app",
+  "version": "0.1.1",
+  "description": "Local-first knowledge management and note-taking",
   "homepage": "https://b3log.org/siyuan",
   "main": "./electron/main.js",
   "packageManager": "pnpm@11.22.0",

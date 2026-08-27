@@ -1,10 +1,10 @@
-productName: "SiYuan"
-appId: "org.b3log.siyuan"
+productName: "52Note"
+appId: "com.note52.app"
 publish: null
 asar: false
 compression: "normal"
 copyright: "© 2020-present Yunnan Liandi Technology Co., Ltd."
-artifactName: "siyuan-${version}-${os}.${ext}"
+artifactName: "52note-${version}-${os}.${ext}"
 extraMetadata:
   main: "electron/main.js"
 directories:
@@ -22,10 +22,10 @@ linux:
   icon: "src/assets/icon/"
   category: "Utility"
   syncDesktopName: true
-  executableName: "siyuan"
+  executableName: "52note"
   desktop: {
     entry: {
-      Name: "SiYuan",
+      Name: "52Note",
       Comment: "From thought to insight, with agents",
       Type: "Application",
       Categories: "Utility;"

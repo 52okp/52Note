@@ -145,6 +145,32 @@
     float: left;
     transition: var(--b3-color-transition);
   }
+
+  // 空白段落使用更显眼的加号块标，便于新用户发现块菜单。
+  button.protyle-gutters__add {
+    width: 26px;
+    height: 26px;
+    padding: 4px;
+    border: 1px solid var(--b3-border-color);
+    border-radius: var(--b3-border-radius);
+    background-color: var(--b3-theme-background);
+
+    &::before {
+      display: none;
+    }
+
+    &:hover {
+      border-color: var(--b3-theme-primary-light);
+      background-color: var(--b3-list-icon-hover);
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+      float: none;
+      color: var(--b3-theme-on-surface);
+    }
+  }
 }
 
 // 块标边缘框线（悬浮块标显示），与 .protyle-gutters 同为 fixed 坐标系，由 JS 贴块标边缘定位

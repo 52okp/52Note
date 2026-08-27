@@ -3553,6 +3553,7 @@ export class Gutter {
                     embedID,
                     popoverHTML,
                     draggable: !protyle.disabled && !embedContext,
+                    prominentAdd: type === "NodeParagraph" && nodeElement.textContent.trim() === "",
                 }) : "";
                 if (!hideParent) {
                     html = buttonHTML + html;

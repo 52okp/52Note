@@ -1,5 +1,5 @@
 <p align="center">
-<img alt="SiYuan" src="https://b3log.org/images/brand/siyuan-128.png">
+<img alt="52Note" src="52notelogo.png" width="128">
 <br>
 <em>From thought to insight, with agents</em>
 <br><br>
@@ -22,6 +22,8 @@
 <br><br>
 <a href="https://trendshift.io/repositories/3949" target="_blank"><img src="https://trendshift.io/api/badge/repositories/3949" alt="siyuan-note%2Fsiyuan | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </p>
+
+<p align="center">52Note is a customized distribution based on SiYuan. Upstream copyright notices are retained, and this repository remains licensed under AGPL-3.0.</p>
 
 <p align="center">
 <b>English</b>

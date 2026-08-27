@@ -1,5 +1,5 @@
 <p align="center">
-<img alt="SiYuan" src="https://b3log.org/images/brand/siyuan-128.png">
+<img alt="52Note" src="52notelogo.png" width="128">
 <br>
 <em>从思考到洞见，与智能体同行</em>
 <br><br>
@@ -22,6 +22,8 @@
 <br><br>
 <a href="https://trendshift.io/repositories/3949" target="_blank"><img src="https://trendshift.io/api/badge/repositories/3949" alt="siyuan-note%2Fsiyuan | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </p>
+
+<p align="center">52Note 是基于思源笔记定制的发行版。本仓库保留上游版权声明，并继续遵循 AGPL-3.0 许可证。</p>
 
 <p align="center">
 <a href="README.md">English</a>

@@ -2,9 +2,6 @@ import {Constants} from "../constants";
 import {fetchPost, fetchSyncPost} from "../util/fetch";
 import {openDataMigration} from "../menus/dataMigration";
 import {mountHelp} from "../util/mount";
-import {syncGuide} from "../sync/syncGuide";
-import {openSetting} from "../config";
-import {isPaidUser} from "../util/needSubscribe";
 import {parseUriInfo, setNoteBook} from "../util/pathName";
 import type {App} from "../index";
 /// #if MOBILE
@@ -36,20 +33,10 @@ const shouldShowOnboarding = () => {
         !window.siyuan.config.onboarding.dismissed;
 };
 
-let pendingLoginHandler: (() => void) | undefined;
-let pendingSyncHandler: (() => void) | undefined;
 let mobileKeyboardHandler: EventListener | undefined;
 let openingOnboardingDocument = false;
 
 const dismissOnboarding = () => {
-    if (pendingLoginHandler) {
-        window.removeEventListener("siyuan-login-success", pendingLoginHandler);
-        pendingLoginHandler = undefined;
-    }
-    if (pendingSyncHandler) {
-        window.removeEventListener("siyuan-sync-success", pendingSyncHandler);
-        pendingSyncHandler = undefined;
-    }
     if (mobileKeyboardHandler) {
         window.removeEventListener("siyuan-mobile-keyboard-change", mobileKeyboardHandler);
         mobileKeyboardHandler = undefined;
@@ -61,41 +48,7 @@ const dismissOnboarding = () => {
     fetchPost("/api/system/dismissOnboarding", {});
 };
 
-const syncAndDismissOnSuccess = (app: App) => {
-    if (pendingSyncHandler) {
-        window.removeEventListener("siyuan-sync-success", pendingSyncHandler);
-    }
-    pendingSyncHandler = () => {
-        pendingSyncHandler = undefined;
-        dismissOnboarding();
-    };
-    window.addEventListener("siyuan-sync-success", pendingSyncHandler, {once: true});
-    syncGuide(app);
-};
-
-const loginAndSync = (app: App) => {
-    if (window.siyuan.user) {
-        if (isPaidUser()) {
-            syncAndDismissOnSuccess(app);
-        } else {
-            syncGuide(app);
-        }
-        return;
-    }
-    if (pendingLoginHandler) {
-        window.removeEventListener("siyuan-login-success", pendingLoginHandler);
-    }
-    pendingLoginHandler = () => {
-        pendingLoginHandler = undefined;
-        if (isPaidUser()) {
-            syncAndDismissOnSuccess(app);
-        }
-    };
-    window.addEventListener("siyuan-login-success", pendingLoginHandler, {once: true});
-    openSetting(app, "sync");
-};
-
-const renderOnboarding = (app: App) => {
+const renderOnboarding = () => {
     if (!shouldShowOnboarding() || document.querySelector(".onboarding")) {
         return;
     }
@@ -108,9 +61,6 @@ const renderOnboarding = (app: App) => {
 <div class="onboarding__desc">${window.siyuan.languages.onboardingDescription}</div>
 <button class="b3-button b3-button--outline fn__block" data-type="import">
     <svg><use xlink:href="#iconDownload"></use></svg>${window.siyuan.languages.importExistingData}
-</button>
-<button class="b3-button b3-button--outline fn__block" data-type="sync">
-    <svg><use xlink:href="#iconCloud"></use></svg>${window.siyuan.languages.loginAndSync}
 </button>
 <button class="b3-button b3-button--outline fn__block" data-type="guide">
     <svg><use xlink:href="#iconHelp"></use></svg>${window.siyuan.languages.userGuide}
@@ -130,9 +80,6 @@ const renderOnboarding = (app: App) => {
                     notebookID: window.siyuan.config.onboarding.notebookID,
                     onContentImportComplete: dismissOnboarding,
                 });
-                break;
-            case "sync":
-                loginAndSync(app);
                 break;
             case "guide":
                 mountHelp();
@@ -167,7 +114,7 @@ export const openDesktopOnboarding = (app: App) => {
         if (!shouldShowOnboarding()) {
             return;
         }
-        renderOnboarding(app);
+        renderOnboarding();
         if (getAllTabs("Editor").length > 0 || parseUriInfo().id || openingOnboardingDocument) {
             return;
         }
@@ -190,7 +137,7 @@ export const openMobileOnboarding = (app: App) => {
     if (!shouldShowOnboarding()) {
         return false;
     }
-    renderOnboarding(app);
+    renderOnboarding();
     openMobileFileById(app, window.siyuan.config.onboarding.documentID, [Constants.CB_GET_CONTEXT]);
     return true;
 };

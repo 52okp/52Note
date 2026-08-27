@@ -212,7 +212,7 @@ app.setPath("userData", path.join(app.getPath("appData"), app.getName() + "-Elec
 
 if (process.platform === "win32") {
     // Windows 需要设置 AppUserModelId 才能正确显示应用名称和应用图标 https://github.com/siyuan-note/siyuan/issues/17022
-    app.setAppUserModelId("org.b3log.siyuan");
+    app.setAppUserModelId("com.note52.app");
 }
 
 if (!app.requestSingleInstanceLock()) {
@@ -1039,7 +1039,7 @@ const initMainWindow = (currentKernelPort = kernelPort) => {
 
     // 创建主窗体
     const currentWindow = new BrowserWindow({
-        title: "SiYuan",
+        title: "52Note",
         show: false,
         width: windowState.width,
         height: windowState.height,
@@ -1155,7 +1155,7 @@ const initMainWindow = (currentKernelPort = kernelPort) => {
     }
 
     // 菜单
-    const productName = "SiYuan";
+    const productName = "52Note";
     const template = [{
         label: productName, submenu: [{
             label: `About ${productName}`, role: "about",
@@ -2070,7 +2070,7 @@ app.whenReady().then(() => {
         const wndBounds = getWindowByContentId(event.sender.id).getBounds();
         const wndScreen = screen.getDisplayNearestPoint({x: wndBounds.x, y: wndBounds.y});
         const printWin = new BrowserWindow({
-            title: "SiYuan",
+            title: "52Note",
             show: true,
             width: Math.floor(wndScreen.size.width * 0.8),
             height: Math.floor(wndScreen.size.height * 0.8),
@@ -2113,7 +2113,7 @@ app.whenReady().then(() => {
         const mainBounds = mainWindow.getBounds();
         const mainScreen = screen.getDisplayNearestPoint({x: mainBounds.x, y: mainBounds.y});
         const win = new BrowserWindow({
-            title: "SiYuan",
+            title: "52Note",
             show: true,
             trafficLightPosition: {x: 8, y: 13},
             width: Math.floor(data.width || mainScreen.size.width * 0.7),
@@ -2196,7 +2196,7 @@ app.whenReady().then(() => {
             if ("win32" === process.platform || "linux" === process.platform) {
                 // 系统托盘
                 tray = new Tray(path.join(appDir, "stage", "icon-large.png"));
-                tray.setToolTip(`${path.basename(data.workspaceDir)} - SiYuan v${appVer}`);
+                tray.setToolTip(`${path.basename(data.workspaceDir)} - 52Note v${appVer}`);
                 const mainWindow = getWindowByContentId(event.sender.id);
                 if (!mainWindow || mainWindow.isDestroyed()) {
                     tray.destroy();
