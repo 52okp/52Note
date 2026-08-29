@@ -976,6 +976,10 @@ func closeSyncWebSocket() {
 
 func connectSyncWebSocket() {
 	defer logging.Recover()
+	// 52NoteAdmin 当前使用 Dejavu 的同步锁和定时/手动同步，不连接思源官方推送服务。
+	if !noteCloudPushEnabled {
+		return
+	}
 
 	if !Conf.Sync.Enabled || !IsSubscriber() || conf.ProviderSiYuan != Conf.Sync.Provider {
 		return

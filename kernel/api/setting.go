@@ -982,7 +982,11 @@ func getCloudUser(c *gin.Context) {
 	if nil != t {
 		token = t.(string)
 	}
-	model.RefreshUser(token)
+	if err := model.Refresh52NoteUser(token); err != nil {
+		ret.Code = -1
+		ret.Msg = err.Error()
+		return
+	}
 	ret.Data = model.Conf.GetUser()
 }
 
@@ -990,7 +994,7 @@ func logoutCloudUser(c *gin.Context) {
 	ret := gulu.Ret.NewResult()
 	defer c.JSON(http.StatusOK, ret)
 
-	model.LogoutUser()
+	model.Logout52Note()
 }
 
 func login2faCloudUser(c *gin.Context) {

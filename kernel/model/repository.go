@@ -2690,7 +2690,12 @@ func newRepository() (ret *dejavu.Repo, err error) {
 	var cloudRepo cloud.Cloud
 	switch Conf.Sync.Provider {
 	case conf.ProviderSiYuan:
-		cloudRepo = cloud.NewSiYuan(&cloud.BaseCloud{Conf: cloudConf})
+		user := Conf.GetUser()
+		if user == nil || user.UserWorkspaceID == "" {
+			err = errors.New(Conf.Language(18))
+			return
+		}
+		cloudRepo = new52NoteCloud(&cloud.BaseCloud{Conf: cloudConf}, user.UserWorkspaceID)
 	case conf.ProviderS3:
 		// 显式注入 SiYuan UA，覆盖 aws SDK 默认 UA（含架构、Go 版本、SDK 版本等冗余信息），便于 S3 服务端按 SiYuan/ 前缀识别加白名单
 		s3HTTPClient := httpclient.NewUserAgentClient(httpclient.NewTransport(cloudConf.S3.SkipTlsVerify))
@@ -2956,7 +2961,6 @@ func buildCloudConf() (ret *cloud.Conf, err error) {
 		u := Conf.GetUser()
 		userId = u.UserId
 		token = u.UserToken
-		availableSize = u.GetCloudRepoAvailableSize()
 	}
 
 	ret = &cloud.Conf{

@@ -220,7 +220,6 @@ var (
 func RefreshCheckJob2H() {
 	go refreshSubscriptionExpirationRemind()
 	go refreshUser()
-	go refreshAnnouncement()
 }
 
 func RefreshCheckJob6H() {
@@ -267,7 +266,7 @@ func refreshUser() {
 	if nil != Conf.GetUser() {
 		time.Sleep(2 * time.Minute)
 		if nil != Conf.GetUser() {
-			RefreshUser(Conf.GetUser().UserToken)
+			_ = Refresh52NoteUser(Conf.GetUser().UserToken)
 		}
 		subscriptionExpirationReminded = false
 	}

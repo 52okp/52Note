@@ -101,3 +101,52 @@ func login(c *gin.Context) {
 	ret = model.Login(name, password, captcha, cloudRegion)
 	c.JSON(http.StatusOK, ret)
 }
+
+func register52Note(c *gin.Context) {
+	account52Note(c, true)
+}
+
+func login52Note(c *gin.Context) {
+	account52Note(c, false)
+}
+
+func account52Note(c *gin.Context, register bool) {
+	ret := gulu.Ret.NewResult()
+	defer c.JSON(http.StatusOK, ret)
+	arg, ok := util.JsonArg(c, ret)
+	if !ok {
+		return
+	}
+	email, _ := arg["email"].(string)
+	password, _ := arg["password"].(string)
+	displayName, _ := arg["displayName"].(string)
+	var err error
+	if register {
+		err = model.Register52Note(email, password, displayName)
+	} else {
+		err = model.Login52Note(email, password)
+	}
+	if err != nil {
+		ret.Code = -1
+		ret.Msg = err.Error()
+		return
+	}
+	ret.Data = model.Conf.GetUser()
+}
+
+func refresh52Note(c *gin.Context) {
+	ret := gulu.Ret.NewResult()
+	defer c.JSON(http.StatusOK, ret)
+	if err := model.Refresh52NoteUser(""); err != nil {
+		ret.Code = -1
+		ret.Msg = err.Error()
+		return
+	}
+	ret.Data = model.Conf.GetUser()
+}
+
+func logout52Note(c *gin.Context) {
+	ret := gulu.Ret.NewResult()
+	defer c.JSON(http.StatusOK, ret)
+	model.Logout52Note()
+}

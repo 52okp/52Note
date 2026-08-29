@@ -27,6 +27,8 @@ type User struct {
 	UserCreateTime                  string       `json:"userCreateTime"`
 	UserSiYuanProExpireTime         float64      `json:"userSiYuanProExpireTime"`
 	UserToken                       string       `json:"userToken"`
+	UserRefreshToken                string       `json:"userRefreshToken"`
+	UserWorkspaceID                 string       `json:"userWorkspaceId"`
 	UserTokenExpireTime             string       `json:"userTokenExpireTime"`
 	UserSiYuanRepoSize              float64      `json:"userSiYuanRepoSize"`
 	UserSiYuanPointExchangeRepoSize float64      `json:"userSiYuanPointExchangeRepoSize"`
