@@ -2182,7 +2182,8 @@ app.whenReady().then(() => {
             let tray;
             if ("win32" === process.platform || "linux" === process.platform) {
                 // 系统托盘
-                tray = new Tray(path.join(appDir, "stage", "icon-large.png"));
+                const trayIcon = "win32" === process.platform ? "tray.ico" : "icon-large.png";
+                tray = new Tray(path.join(appDir, "stage", trayIcon));
                 tray.setToolTip(`${path.basename(data.workspaceDir)} - 52Note v${appVer}`);
                 const mainWindow = getWindowByContentId(event.sender.id);
                 if (!mainWindow || mainWindow.isDestroyed()) {

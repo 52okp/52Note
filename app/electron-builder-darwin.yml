@@ -13,9 +13,9 @@ files:
   - "electron"
 afterPack: "./scripts/afterPack.js"
 extraFiles:
-  - from: "../LICENSE"
+  - from: "../../LICENSE"
     to: "Resources/LICENSE"
-  - from: "../THIRD_PARTY_NOTICES.md"
+  - from: "../../THIRD_PARTY_NOTICES.md"
     to: "Resources/THIRD_PARTY_NOTICES.md"
 
 mac:

@@ -1,7 +1,7 @@
 {
   "name": "52Note",
   "desktopName": "com.note52.app",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Local-first knowledge management and note-taking",
   "homepage": "https://b3log.org/siyuan",
   "main": "./electron/main.js",

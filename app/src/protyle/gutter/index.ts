@@ -790,32 +790,35 @@ export class Gutter {
                 // 竖排时隐藏块标提示，避免其遮挡右侧框线与+号
                 hideTooltip();
             } else {
-                // 横排：框线贴块标上下边缘，+号定位在外偏位置
+                // 横排：上下插入按钮与块标保留间距，避免主加号边缘误触插入操作。
                 const lineW = 10;
                 const left = rect.left + (rect.width - lineW) / 2;
                 const plusSize = 16;
                 const plusLeft = rect.left + (rect.width - plusSize) / 2;
+                const insertControlOffset = 20;
+                const beforeCenterY = rect.top - insertControlOffset;
+                const afterCenterY = rect.bottom + insertControlOffset;
                 lineBefore.style.display = "";
                 lineBefore.style.opacity = "1";
                 lineBefore.style.width = `${lineW}px`;
                 lineBefore.style.height = "2px";
                 lineBefore.style.left = `${getFixedGutterPosition(left, fixedContainerRect?.left)}px`;
-                lineBefore.style.top = `${getFixedGutterPosition(rect.top - 4, fixedContainerRect?.top)}px`;
+                lineBefore.style.top = `${getFixedGutterPosition(beforeCenterY - 1, fixedContainerRect?.top)}px`;
                 lineAfter.style.display = "";
                 lineAfter.style.opacity = "1";
                 lineAfter.style.width = `${lineW}px`;
                 lineAfter.style.height = "2px";
                 lineAfter.style.left = `${getFixedGutterPosition(left, fixedContainerRect?.left)}px`;
-                lineAfter.style.top = `${getFixedGutterPosition(rect.bottom + 2, fixedContainerRect?.top)}px`;
+                lineAfter.style.top = `${getFixedGutterPosition(afterCenterY - 1, fixedContainerRect?.top)}px`;
                 plusBefore.style.width = `${plusSize}px`;
                 plusBefore.style.height = `${plusSize}px`;
                 plusBefore.style.left = `${getFixedGutterPosition(plusLeft, fixedContainerRect?.left)}px`;
-                plusBefore.style.top = `${getFixedGutterPosition(rect.top - 5 - plusSize / 2 + 1,
+                plusBefore.style.top = `${getFixedGutterPosition(beforeCenterY - plusSize / 2,
                     fixedContainerRect?.top)}px`;
                 plusAfter.style.width = `${plusSize}px`;
                 plusAfter.style.height = `${plusSize}px`;
                 plusAfter.style.left = `${getFixedGutterPosition(plusLeft, fixedContainerRect?.left)}px`;
-                plusAfter.style.top = `${getFixedGutterPosition(rect.bottom + 3 - plusSize / 2 + 1,
+                plusAfter.style.top = `${getFixedGutterPosition(afterCenterY - plusSize / 2,
                     fixedContainerRect?.top)}px`;
             }
             window.clearTimeout(hidePlusTimeout);

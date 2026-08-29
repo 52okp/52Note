@@ -3,7 +3,7 @@ FROM --platform=$BUILDPLATFORM node:22 AS node-build
 ARG NPM_REGISTRY=
 
 WORKDIR /app
-ADD app/package.json app/pnpm* app/.npmrc .
+ADD qianduan/app/package.json qianduan/app/pnpm* qianduan/app/.npmrc .
 
 RUN <<EORUN
 #!/bin/bash -e
@@ -13,7 +13,7 @@ npm config set registry ${NPM_REGISTRY}
 pnpm install --silent
 EORUN
 
-ADD app/ .
+ADD qianduan/app/ .
 RUN <<EORUN
 #!/bin/bash -e
 pnpm run build
@@ -33,11 +33,11 @@ go env -w CGO_ENABLED=1
 EORUN
 
 WORKDIR /kernel
-ADD kernel/go.* .
+ADD qianduan/kernel/go.* .
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
     go mod download
 
-ADD kernel/ .
+ADD qianduan/kernel/ .
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
     go build -tags "fts5 sqlcipher" -ldflags "-s -w"
 

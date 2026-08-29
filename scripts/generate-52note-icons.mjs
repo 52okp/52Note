@@ -114,6 +114,8 @@ await fs.writeFile(path.join(root, "app/src/assets/icon.ico"), appIcon);
 await fs.writeFile(path.join(root, "kernel/resource/icon.ico"), appIcon);
 const favicon = await createIco([16, 32, 48]);
 await fs.writeFile(path.join(root, "app/stage/favicon.ico"), favicon);
+const trayIcon = await createIco([16, 20, 24, 32]);
+await fs.writeFile(path.join(root, "app/stage/tray.ico"), trayIcon);
 await fs.writeFile(path.join(root, "app/src/assets/icon.icns"), await createIcns());
 
-console.log(`Generated ${squareTargets.length + 5} icon assets from 52notelogo2.png.`);
+console.log(`Generated ${squareTargets.length + 6} icon assets from 52notelogo2.png.`);

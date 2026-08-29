@@ -13,9 +13,9 @@ files:
   - "electron"
 afterPack: "./scripts/afterPack.js"
 extraFiles:
-  - from: "../LICENSE"
+  - from: "../../LICENSE"
     to: "LICENSE"
-  - from: "../THIRD_PARTY_NOTICES.md"
+  - from: "../../THIRD_PARTY_NOTICES.md"
     to: "THIRD_PARTY_NOTICES.md"
 win:
   icon: "src/assets/icon.ico"
@@ -39,7 +39,7 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: "52Note"
-  license: "../LICENSE"
+  license: "../../LICENSE"
   include: "nsis/installer.nsh"
   warningsAsErrors: false
   installerSidebar: "nsis/installerSidebar.bmp"

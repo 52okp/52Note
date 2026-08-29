@@ -19,6 +19,7 @@ package model
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -77,13 +78,23 @@ func TestSelectGitHubRelease(t *testing.T) {
 
 func TestParseChecksumManifest(t *testing.T) {
 	checksum := strings.Repeat("A", 64)
-	manifest := checksum + " *nested\\siyuan-3.7.4-alpha.1-win.exe\n"
-	got := parseChecksumManifest(manifest, "siyuan-3.7.4-alpha.1-win.exe")
+	manifest := checksum + " *nested\\52note-3.7.4-alpha.1-win.exe\n"
+	got := parseChecksumManifest(manifest, "52note-3.7.4-alpha.1-win.exe")
 	if strings.ToLower(checksum) != got {
 		t.Fatalf("unexpected checksum: %q", got)
 	}
-	if "" != parseChecksumManifest(manifest, "siyuan-3.7.4-alpha.1-win-arm64.exe") {
+	if "" != parseChecksumManifest(manifest, "52note-3.7.4-alpha.1-win-arm64.exe") {
 		t.Fatal("unexpected checksum for missing package")
+	}
+}
+
+func TestCurrentInstallPackageName(t *testing.T) {
+	if "windows" != runtime.GOOS || "amd64" != runtime.GOARCH {
+		t.Skip("Windows amd64 package naming test")
+	}
+	name := currentInstallPackageName("0.1.3")
+	if "52note-0.1.3-win.exe" != name {
+		t.Fatalf("unexpected Windows package name: %q", name)
 	}
 }
 

@@ -83,12 +83,6 @@ FunctionEnd
 !macro customInstall
     !insertmacro WriteInstallLog "payload-extracted version=${VERSION} target=$INSTDIR"
     RMDir /r "$PROFILE\AppData\Local\siyuan-updater"
-    nsExec::ExecToLog '"$SYSDIR\cmd.exe" /c mklink /H "$INSTDIR\resources\kernel\siyuan.exe" "$INSTDIR\resources\kernel\SiYuan-Kernel.exe" 2>nul || ver>nul'
-    ${If} $installMode == "all"
-        nsExec::ExecToLog '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command "$k=\"$INSTDIR\resources\kernel\";$p=[Environment]::GetEnvironmentVariable(\"Path\",\"Machine\");if((-not $p) -or -not ($p.Split(\";\") -contains $k)){$p=\"$k;$p\";[Environment]::SetEnvironmentVariable(\"Path\",$p,\"Machine\")}else{Write-Host \"already in PATH\"}"'
-    ${Else}
-        nsExec::ExecToLog '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command "$k=\"$INSTDIR\resources\kernel\";$p=[Environment]::GetEnvironmentVariable(\"Path\",\"User\");if((-not $p) -or -not ($p.Split(\";\") -contains $k)){$p=\"$k;$p\";[Environment]::SetEnvironmentVariable(\"Path\",$p,\"User\")}else{Write-Host \"already in PATH\"}"'
-    ${EndIf}
     !insertmacro WriteInstallLog "install-complete version=${VERSION} target=$INSTDIR"
 !macroend
 
@@ -116,11 +110,6 @@ FunctionEnd
     ${EndIf}
 
     RMDir /r "$PROFILE\AppData\Local\siyuan-updater"
-    ${If} $installMode == "all"
-        nsExec::ExecToLog '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command "$k=\"$INSTDIR\resources\kernel\";$p=[Environment]::GetEnvironmentVariable(\"Path\",\"Machine\");if($p){$a=$p.Split(\";\") | ?{$_ -and ($_ -ne $k)};$p=[string]::Join(\";\",$a);[Environment]::SetEnvironmentVariable(\"Path\",$p,\"Machine\")}"'
-    ${Else}
-        nsExec::ExecToLog '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command "$k=\"$INSTDIR\resources\kernel\";$p=[Environment]::GetEnvironmentVariable(\"Path\",\"User\");if($p){$a=$p.Split(\";\") | ?{$_ -and ($_ -ne $k)};$p=[string]::Join(\";\",$a);[Environment]::SetEnvironmentVariable(\"Path\",$p,\"User\")}"'
-    ${EndIf}
 !macroend
 
 # https://nsis.sourceforge.io/FindIt:_Simple_search_for_file_/_directory
