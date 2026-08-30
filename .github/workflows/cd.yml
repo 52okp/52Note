@@ -1,12 +1,16 @@
-name: CD For SiYuan
+name: 52Note Release
 
 on:
   push:
     tags:
-      - '*-alpha*'
-      - '*-beta*'
-      - '*-rc*'
+      - 'v*'
   workflow_dispatch:
+    inputs:
+      build_android:
+        description: "Build Android APK"
+        required: false
+        type: boolean
+        default: false
 
 env:
   package_json: "app/package.json"
@@ -52,19 +56,7 @@ jobs:
 
       - name: Verify siyuan-android version
         id: android_version
-        # Android 的 siyuanVersionName 必须与 package.json 版本一致，否则在打包前终止整个流程。
         run: |
-          ANDROID_VERSION=$(sed -nE 's/^[[:space:]]*siyuanVersionName[[:space:]]*=[[:space:]]*"([^"]+)"[[:space:]]*$/\1/p' build.gradle)
-          VERSION="${{ steps.version.outputs.value }}"
-          if [ -z "$ANDROID_VERSION" ]; then
-            echo "Unable to read siyuanVersionName from siyuan-android/build.gradle, stopping"
-            exit 1
-          fi
-          if [ "$ANDROID_VERSION" != "$VERSION" ]; then
-            echo "siyuan-android version ($ANDROID_VERSION) does not match package.json version ($VERSION), stopping"
-            exit 1
-          fi
-          echo "siyuan-android version matches: $ANDROID_VERSION"
           echo "ref=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
         working-directory: ${{ github.workspace }}/siyuan-android
 
@@ -94,7 +86,7 @@ jobs:
       - name: Gather Release Information
         id: release_info
         run: |
-          echo "release_title=SiYuan v${{ steps.version.outputs.value }}" >> $GITHUB_OUTPUT
+          echo "release_title=52Note v${{ steps.version.outputs.value }}" >> $GITHUB_OUTPUT
           changelog_header=$(python scripts/parse-changelog-HEAD.py -t ${{ github.ref }} -b ${{ steps.thisLatestRelease.outputs.release }} -e ${{ steps.electronVersion.outputs.value }} ${{ github.repository }})
           changelog=$(python scripts/parse-changelog.py -t ${{ github.ref }} ${{ github.repository }})
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
@@ -114,36 +106,6 @@ jobs:
     strategy:
       matrix:
         config:
-          - os: ubuntu-24.04
-            name: ubuntu build linux
-            kernel_path: "../app/kernel-linux/SiYuan-Kernel"
-            build_args_prefix: "-s -w -X"
-            build_args_suffix: "Mode=prod"
-            electron_args: "dist-linux"
-            goos: "linux"
-            goarch: "amd64"
-            suffix: "linux"
-            e2e_shards: ""
-          - os: macos-latest
-            name: macos build mac.dmg
-            kernel_path: "../app/kernel-darwin/SiYuan-Kernel"
-            build_args_prefix: "-s -w -X"
-            build_args_suffix: "Mode=prod"
-            electron_args: "dist-darwin"
-            goos: "darwin"
-            goarch: "amd64"
-            suffix: "mac.dmg"
-            e2e_shards: "main:6806"
-          - os: macos-latest
-            name: macos build mac-arm64.dmg
-            kernel_path: "../app/kernel-darwin-arm64/SiYuan-Kernel"
-            build_args_prefix: "-s -w -X"
-            build_args_suffix: "Mode=prod"
-            electron_args: "dist-darwin-arm64"
-            goos: "darwin"
-            goarch: "arm64"
-            suffix: "mac-arm64.dmg"
-            e2e_shards: "editor:6807"
           - os: windows-latest
             name: windows build win.exe
             kernel_path: "../app/kernel/SiYuan-Kernel.exe"
@@ -434,23 +396,24 @@ jobs:
         if: matrix.config.goos != 'linux'
         uses: actions/upload-artifact@v7
         with:
-          name: siyuan-${{ matrix.config.suffix }}
-          path: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/siyuan-*-${{ matrix.config.suffix }}
+          name: 52note-${{ matrix.config.suffix }}
+          path: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-${{ matrix.config.suffix }}
 
       - name: Upload Build Artifacts (Linux)
         if: matrix.config.goos == 'linux'
         uses: actions/upload-artifact@v7
         with:
-          name: siyuan-linux
+          name: 52note-linux
           path: |
-            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/siyuan-*-linux.AppImage
-            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/siyuan-*-linux.tar.gz
-            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/siyuan-*-linux.deb
-            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/siyuan-*-linux.rpm
+            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-linux.AppImage
+            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-linux.tar.gz
+            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-linux.deb
+            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-linux.rpm
 
   build_android:
     runs-on: ubuntu-latest
     name: ubuntu build android.apk
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_android }}
     # Android and desktop builds run in parallel, both depend on prepare.
     # create_release aggregates all artifacts once both jobs succeed.
     needs: prepare
@@ -551,6 +514,7 @@ jobs:
         # 更稳;sed 删除所有 maven.aliyun.com 行,保留官方仓库。
         run: |
           sed -i '/maven.aliyun.com/d' build.gradle
+          sed -i -E 's/^([[:space:]]*siyuanVersionName[[:space:]]*=[[:space:]]*)"[^"]+"/\1"${{ needs.prepare.outputs.version }}"/' build.gradle
           echo "=== Patched build.gradle repositories ==="
           grep -A 6 "repositories" build.gradle | head -20
         working-directory: ${{ github.workspace }}/siyuan-android
@@ -563,7 +527,7 @@ jobs:
           cd ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
           node scripts/trimChangelogs.js
           zip -r app.zip appearance guide stage $([ -d changelogs ] && echo changelogs)
-          zip -j app.zip ../LICENSE ../THIRD_PARTY_NOTICES.md
+          zip -j app.zip ../../LICENSE ../../THIRD_PARTY_NOTICES.md
           mkdir -p ${{ github.workspace }}/siyuan-android/app/src/main/assets
           cp app.zip ${{ github.workspace }}/siyuan-android/app/src/main/assets/app.zip
 
@@ -598,19 +562,19 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleOfficialRelease
           cd app/build/outputs/apk/official/release
-          mv siyuan-*-official-release.apk siyuan-${{ needs.prepare.outputs.version }}.apk
+          mv siyuan-*-official-release.apk 52note-${{ needs.prepare.outputs.version }}.apk
         working-directory: ${{ github.workspace }}/siyuan-android
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: siyuan-android
-          path: ${{ github.workspace }}/siyuan-android/app/build/outputs/apk/official/release/siyuan-${{ needs.prepare.outputs.version }}.apk
+          name: 52note-android
+          path: ${{ github.workspace }}/siyuan-android/app/build/outputs/apk/official/release/52note-${{ needs.prepare.outputs.version }}.apk
 
   create_release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [prepare, build, build_android]
+    needs: [prepare, build]
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v8
@@ -621,24 +585,10 @@ jobs:
           set -euo pipefail
           VERSION="${{ needs.prepare.outputs.version }}"
           mkdir -p release-assets
-          cp "siyuan-linux/siyuan-${VERSION}-linux.AppImage" release-assets/
-          cp "siyuan-linux/siyuan-${VERSION}-linux.tar.gz" release-assets/
-          cp "siyuan-linux/siyuan-${VERSION}-linux.deb" release-assets/
-          cp "siyuan-linux/siyuan-${VERSION}-linux.rpm" release-assets/
-          cp "siyuan-mac.dmg/siyuan-${VERSION}-mac.dmg" release-assets/
-          cp "siyuan-mac-arm64.dmg/siyuan-${VERSION}-mac-arm64.dmg" release-assets/
-          cp "siyuan-win.exe/siyuan-${VERSION}-win.exe" release-assets/
-          cp "siyuan-android/siyuan-${VERSION}.apk" release-assets/
+          cp "52note-win.exe/52note-${VERSION}-win.exe" release-assets/
 
           EXPECTED_ASSETS=(
-            "siyuan-${VERSION}-linux.AppImage"
-            "siyuan-${VERSION}-linux.tar.gz"
-            "siyuan-${VERSION}-linux.deb"
-            "siyuan-${VERSION}-linux.rpm"
-            "siyuan-${VERSION}-mac.dmg"
-            "siyuan-${VERSION}-mac-arm64.dmg"
-            "siyuan-${VERSION}-win.exe"
-            "siyuan-${VERSION}.apk"
+            "52note-${VERSION}-win.exe"
           )
           for asset in "${EXPECTED_ASSETS[@]}"; do
             test -s "release-assets/${asset}"
@@ -656,7 +606,7 @@ jobs:
           tag: ${{ github.ref_name }}
           body: ${{ needs.prepare.outputs.release_body }}
           draft: true
-          prerelease: true
+          prerelease: ${{ contains(needs.prepare.outputs.version, '-') }}
           allowUpdates: true
           omitDraftDuringUpdate: true
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -686,14 +636,7 @@ jobs:
           TAG="${{ github.ref_name }}"
           RELEASE_ID="$(gh release view "${TAG}" --json databaseId --jq '.databaseId')"
           EXPECTED_ASSETS=(
-            "siyuan-${VERSION}-linux.AppImage"
-            "siyuan-${VERSION}-linux.tar.gz"
-            "siyuan-${VERSION}-linux.deb"
-            "siyuan-${VERSION}-linux.rpm"
-            "siyuan-${VERSION}-mac.dmg"
-            "siyuan-${VERSION}-mac-arm64.dmg"
-            "siyuan-${VERSION}-win.exe"
-            "siyuan-${VERSION}.apk"
+            "52note-${VERSION}-win.exe"
             "SHA256SUMS.txt"
           )
           declare -A EXPECTED_DIGESTS
@@ -714,7 +657,11 @@ jobs:
               fi
             done
             if [ "${READY}" = true ]; then
-              gh release edit "${TAG}" --draft=false --prerelease
+              if [[ "${VERSION}" == *-* ]]; then
+                gh release edit "${TAG}" --draft=false --prerelease
+              else
+                gh release edit "${TAG}" --draft=false --prerelease=false
+              fi
               exit 0
             fi
             sleep 5
@@ -722,3 +669,54 @@ jobs:
 
           echo "Release assets or SHA-256 digests are incomplete"
           exit 1
+
+      - name: Upload packages to 52NoteAdmin staging
+        shell: bash
+        env:
+          UPDATE_SERVER_URL: ${{ vars.UPDATE_SERVER_URL || 'https://docs.52okp.com' }}
+          UPDATE_UPLOAD_TOKEN: ${{ secrets.UPDATE_UPLOAD_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${UPDATE_UPLOAD_TOKEN}" ]; then
+            echo "UPDATE_UPLOAD_TOKEN is not configured; skipping website upload"
+            exit 0
+          fi
+          VERSION="${{ needs.prepare.outputs.version }}"
+          for asset in release-assets/52note-*; do
+            filename="$(basename "${asset}")"
+            checksum="$(sha256sum "${asset}" | awk '{print $1}')"
+            curl --fail-with-body --retry 3 --request PUT \
+              --header "Authorization: Bearer ${UPDATE_UPLOAD_TOKEN}" \
+              --header "Content-Type: application/octet-stream" \
+              --data-binary "@${asset}" \
+              "${UPDATE_SERVER_URL%/}/api/v1/releases/upload?version=${VERSION}&filename=${filename}&sha256=${checksum}"
+          done
+
+      - name: Publish 52Note website update
+        shell: bash
+        env:
+          UPDATE_SERVER_URL: ${{ vars.UPDATE_SERVER_URL || 'https://docs.52okp.com' }}
+          UPDATE_UPLOAD_TOKEN: ${{ secrets.UPDATE_UPLOAD_TOKEN }}
+          RELEASE_NOTES: ${{ needs.prepare.outputs.release_body }}
+        run: |
+          set -euo pipefail
+          if [ -z "${UPDATE_UPLOAD_TOKEN}" ]; then
+            echo "UPDATE_UPLOAD_TOKEN is not configured; skipping website publish"
+            exit 0
+          fi
+          VERSION="${{ needs.prepare.outputs.version }}"
+          CHANNEL=stable
+          [[ "${VERSION}" == *-alpha* ]] && CHANNEL=alpha
+          [[ "${VERSION}" == *-beta* || "${VERSION}" == *-rc* ]] && CHANNEL=beta
+          sha() { sha256sum "release-assets/$1" | awk '{print $1}'; }
+          jq -n \
+            --arg version "${VERSION}" --arg channel "${CHANNEL}" --arg notes "${RELEASE_NOTES}" \
+            --arg w "$(sha "52note-${VERSION}-win.exe")" \
+            '{version:$version,channel:$channel,notes:$notes,mandatory:false,assets:[
+              {platform:"windows",arch:"amd64",filename:("52note-"+$version+"-win.exe"),sha256:$w}
+            ]}' > publish.json
+          curl --fail-with-body --retry 3 --request POST \
+            --header "Authorization: Bearer ${UPDATE_UPLOAD_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data-binary @publish.json \
+            "${UPDATE_SERVER_URL%/}/api/v1/releases/publish"
