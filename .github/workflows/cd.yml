@@ -620,12 +620,24 @@ jobs:
           omitDraftDuringUpdate: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify Release Is Draft
+      - name: Verify Release State
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          test "$(gh release view "${{ github.ref_name }}" --json isDraft --jq '.isDraft')" = "true"
+          IS_DRAFT="$(gh release view "${{ github.ref_name }}" --json isDraft --jq '.isDraft')"
+          case "${IS_DRAFT}" in
+            true)
+              echo "Release is a draft; assets will be uploaded before publishing"
+              ;;
+            false)
+              echo "Release is already published; assets will be replaced in place"
+              ;;
+            *)
+              echo "Unable to determine release state: ${IS_DRAFT}"
+              exit 1
+              ;;
+          esac
 
       - name: Upload Release Assets
         env:
