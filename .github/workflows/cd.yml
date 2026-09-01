@@ -13,7 +13,7 @@ on:
         default: false
 
 env:
-  package_json: "app/package.json"
+  package_json: "qianduan/app/package.json"
 
 jobs:
   prepare:
@@ -91,11 +91,11 @@ jobs:
           echo "release_title=52Note v${{ steps.version.outputs.value }}" >> $GITHUB_OUTPUT
           LATEST_RELEASE="${{ steps.thisLatestRelease.outputs.release }}"
           if [ -n "${LATEST_RELEASE}" ]; then
-            changelog_header=$(python scripts/parse-changelog-HEAD.py -t ${{ github.ref }} -b "${LATEST_RELEASE}" -e ${{ steps.electronVersion.outputs.value }} ${{ github.repository }})
+            changelog_header=$(python qianduan/scripts/parse-changelog-HEAD.py -t ${{ github.ref }} -b "${LATEST_RELEASE}" -e ${{ steps.electronVersion.outputs.value }} ${{ github.repository }})
           else
-            changelog_header=$(python scripts/parse-changelog-HEAD.py -t ${{ github.ref }} -e ${{ steps.electronVersion.outputs.value }} ${{ github.repository }})
+            changelog_header=$(python qianduan/scripts/parse-changelog-HEAD.py -t ${{ github.ref }} -e ${{ steps.electronVersion.outputs.value }} ${{ github.repository }})
           fi
-          changelog=$(python scripts/parse-changelog.py -t ${{ github.ref }} ${{ github.repository }})
+          changelog=$(python qianduan/scripts/parse-changelog.py -t ${{ github.ref }} ${{ github.repository }})
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "release_body<<$EOF" >> $GITHUB_OUTPUT
           echo "$changelog_header" >> $GITHUB_OUTPUT
@@ -140,15 +140,15 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel/go.mod
-          cache-dependency-path: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel/go.sum
+          go-version-file: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel/go.mod
+          cache-dependency-path: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel/go.sum
           cache: true
       - run: go version
 
       - name: Set up goversioninfo
         run: go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo && go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo
         if: "contains( matrix.config.goos, 'windows')"
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel
         env:
           GO111MODULE: on
           CGO_ENABLED: 1
@@ -163,41 +163,41 @@ jobs:
 
       - name: Install Node pnpm
         run: npm install -g ${{ needs.prepare.outputs.packageManager }}
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
 
       - name: Cache pnpm store
         uses: actions/cache@v5
         with:
           path: ~/.pnpm-store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('app/pnpm-lock.yaml') }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('qianduan/app/pnpm-lock.yaml') }}
           restore-keys: pnpm-${{ runner.os }}-
 
       - name: Install Node Dependencies
         run: pnpm install --no-frozen-lockfile
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
 
       - name: Install Electron Binary
         run: pnpm run install:electron
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
 
       - name: Building UI
         run: pnpm run build
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
 
       - name: Clean Build and Kernel Directories
         run: |
-          rm -rf "${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build"
-          rm -rf "${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/kernel"*
+          rm -rf "${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app/build"
+          rm -rf "${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app/kernel"*
         shell: bash
 
       - name: Generate Icon Resource and Properties/Version Info For Windows
         run: ${{ github.workspace }}\go\${{ matrix.config.gobin }}\goversioninfo -platform-specific=true -icon="resource\icon.ico" -manifest="resource\goversioninfo.exe.manifest"
         if: "contains( matrix.config.goos, 'windows')"
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel
 
       - name: Building Kernel
-        run: go build -tags "fts5 sqlcipher" -o "${{ matrix.config.kernel_path }}" -ldflags "${{ matrix.config.build_args_prefix }} github.com/${{ github.repository }}/kernel/util.${{ matrix.config.build_args_suffix }}"
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel
+        run: go build -tags "fts5 sqlcipher" -o "${{ matrix.config.kernel_path }}" -ldflags "${{ matrix.config.build_args_prefix }} github.com/siyuan-note/siyuan/kernel/util.${{ matrix.config.build_args_suffix }}"
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel
         env:
           GO111MODULE: on
           CGO_ENABLED: 1
@@ -236,7 +236,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          APP_DIR="${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app"
+          APP_DIR="${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app"
           KERNEL_PATH="${{ matrix.config.kernel_path }}"
           for shard_config in ${SIYUAN_E2E_SHARDS}; do
             shard="${shard_config%:*}"
@@ -247,7 +247,7 @@ jobs:
               > "${RUNNER_TEMP}/siyuan-e2e-${shard}-kernel-console.log" 2>&1 &
             echo "$!" > "${RUNNER_TEMP}/siyuan-e2e-${shard}-kernel.pid"
           done
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel
 
       - name: Wait for End-to-End Test Kernels
         if: matrix.config.e2e_shards != ''
@@ -383,11 +383,11 @@ jobs:
 
       - name: Building Electron App
         run: pnpm run ${{ matrix.config.electron_args }}
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
 
       - name: Verify RPM Package Contents
         if: matrix.config.goos == 'linux'
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
         run: |
           for package in build/*.rpm; do
             test -f "$package"
@@ -404,7 +404,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: 52note-${{ matrix.config.suffix }}
-          path: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-${{ matrix.config.suffix }}
+          path: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app/build/52note-*-${{ matrix.config.suffix }}
 
       - name: Upload Build Artifacts (Linux)
         if: matrix.config.goos == 'linux'
@@ -412,10 +412,10 @@ jobs:
         with:
           name: 52note-linux
           path: |
-            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-linux.AppImage
-            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-linux.tar.gz
-            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-linux.deb
-            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app/build/52note-*-linux.rpm
+            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app/build/52note-*-linux.AppImage
+            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app/build/52note-*-linux.tar.gz
+            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app/build/52note-*-linux.deb
+            ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app/build/52note-*-linux.rpm
 
   build_android:
     runs-on: ubuntu-latest
@@ -433,8 +433,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel/go.mod
-          cache-dependency-path: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel/go.sum
+          go-version-file: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel/go.mod
+          cache-dependency-path: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel/go.sum
           cache: true
       - run: go version
 
@@ -445,22 +445,22 @@ jobs:
 
       - name: Install Node pnpm
         run: npm install -g ${{ needs.prepare.outputs.packageManager }}
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
 
       - name: Cache pnpm store
         uses: actions/cache@v5
         with:
           path: ~/.pnpm-store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('app/pnpm-lock.yaml') }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('qianduan/app/pnpm-lock.yaml') }}
           restore-keys: pnpm-${{ runner.os }}-
 
       - name: Install Node Dependencies
         run: pnpm install --no-frozen-lockfile
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
 
       - name: Building UI
         run: pnpm run build
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -502,7 +502,7 @@ jobs:
 
       - name: Building Android Kernel
         run: gomobile bind -tags "fts5 sqlcipher" -ldflags "-s -w" -v -o kernel.aar -target android/arm64 -androidapi 26 ./mobile/
-        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel
+        working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel
         env:
           GOPATH: ${{ github.workspace }}/go
           CGO_ENABLED: 1
@@ -529,9 +529,9 @@ jobs:
       - name: Prepare siyuan-android Build Inputs
         run: |
           mkdir -p ${{ github.workspace }}/siyuan-android/app/libs
-          cp ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/kernel/kernel.aar \
+          cp ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/kernel/kernel.aar \
              ${{ github.workspace }}/siyuan-android/app/libs/kernel.aar
-          cd ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/app
+          cd ${{ github.workspace }}/go/src/github.com/${{ github.repository }}/qianduan/app
           node scripts/trimChangelogs.js
           zip -r app.zip appearance guide stage $([ -d changelogs ] && echo changelogs)
           zip -j app.zip ../../LICENSE ../../THIRD_PARTY_NOTICES.md
