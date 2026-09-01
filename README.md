@@ -506,7 +506,7 @@ Member's privileges can only be used after payment, please refer to [Pricing](ht
 
 ## 🙏 Acknowledgement
 
-The birth of SiYuan is inseparable from many open source projects and contributors. Please refer to the project source code kernel/go.mod, app/package.json and project homepage.
+The birth of SiYuan is inseparable from many open source projects and contributors. Please refer to the project source code qianduan/kernel/go.mod, qianduan/app/package.json and project homepage.
 
 The growth of SiYuan is inseparable from user feedback and promotion. Thank you, everyone, for your help with SiYuan ❤️
 

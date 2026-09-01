@@ -26,7 +26,7 @@ NPM mirror:
 * Revert to using official repository `pnpm --registry https://registry.npmjs.org i`
 </details>
 
-Enter the app folder and execute:
+Enter the `qianduan/app` folder and execute:
 
 * `pnpm install electron@42.9.2 -D`
 * `pnpm run install:electron`
@@ -45,7 +45,7 @@ Note: In the development environment, the kernel process will not be automatical
 
 ### Desktop
 
-* `cd kernel`
+* `cd qianduan/kernel`
 * Windows:
   * `go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest`
   * `goversioninfo -platform-specific=true -icon=resource/icon.ico -manifest=resource/goversioninfo.exe.manifest`
@@ -57,13 +57,13 @@ Note: In the development environment, the kernel process will not be automatical
 
 ### iOS
 
-* `cd kernel`
+* `cd qianduan/kernel`
 * `gomobile bind -tags "fts5 sqlcipher" -ldflags '-s -w' -v -o ./ios/iosk.xcframework -target=ios ./mobile/`
 * https://github.com/siyuan-note/siyuan-ios
 
 ### Android
 
-* `cd kernel`
+* `cd qianduan/kernel`
 * `set JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8`
 * `gomobile bind -tags "fts5 sqlcipher" -ldflags "-s -w"  -v -o kernel.aar -target android/arm64 -androidapi 26 ./mobile/`
 * https://github.com/siyuan-note/siyuan-android
@@ -72,7 +72,7 @@ Note: In the development environment, the kernel process will not be automatical
 
 Only support compilation under Linux, need to install Harmony SDK, and need to modify Go source code.
 
-* `cd kernel/harmony`
+* `cd qianduan/kernel/harmony`
 * `./build.sh` (`./build-win.sh` for Windows Emulator)
 * https://github.com/siyuan-note/siyuan-harmony
 

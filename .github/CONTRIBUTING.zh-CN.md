@@ -26,7 +26,7 @@ NPM 镜像：
 * 恢复使用官方仓库 `pnpm --registry https://registry.npmjs.org i`
 </details>
 
-进入 app 文件夹执行：
+进入 `qianduan/app` 文件夹执行：
 
 * `pnpm install electron@42.9.2 -D`
 * `pnpm run install:electron`
@@ -45,7 +45,7 @@ NPM 镜像：
 
 ### 桌面端
 
-* `cd kernel`
+* `cd qianduan/kernel`
 * Windows：
   * `go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest`
   * `goversioninfo -platform-specific=true -icon=resource/icon.ico -manifest=resource/goversioninfo.exe.manifest`
@@ -57,13 +57,13 @@ NPM 镜像：
 
 ### iOS
 
-* `cd kernel`
+* `cd qianduan/kernel`
 * `gomobile bind -tags "fts5 sqlcipher" -ldflags '-s -w' -v -o ./ios/iosk.xcframework -target=ios ./mobile/`
 * https://github.com/siyuan-note/siyuan-ios
 
 ### Android
 
-* `cd kernel`
+* `cd qianduan/kernel`
 * `set JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8`
 * `gomobile bind -tags "fts5 sqlcipher" -ldflags "-s -w"  -v -o kernel.aar -target android/arm64 -androidapi 26 ./mobile/`
 * https://github.com/siyuan-note/siyuan-android
@@ -72,7 +72,7 @@ NPM 镜像：
 
 仅支持在 Linux 下编译，需要安装鸿蒙 SDK，并且需要修改 Go 源码。
 
-* `cd kernel/harmony`
+* `cd qianduan/kernel/harmony`
 * `./build.sh` （Windows 模拟器使用 `./build-win.sh`）
 * https://github.com/siyuan-note/siyuan-harmony
 

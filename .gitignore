@@ -1,6 +1,6 @@
 # Binaries for programs and plugins
 *.exe
-!app/elevator/elevator-*.exe
+!qianduan/app/elevator/elevator-*.exe
 *.dll
 *.so
 *.dylib
@@ -9,12 +9,12 @@
 *.syso
 .DS_Store
 .eslintcache
-app/node_modules
-app/stage/build
-app/build
-app/src/types/dist
-app/kernel*
-app/SiYuan-Kernel
+qianduan/app/node_modules
+qianduan/app/stage/build
+qianduan/app/build
+qianduan/app/src/types/dist
+qianduan/app/kernel*
+qianduan/app/SiYuan-Kernel
 ios
 pprof
 
@@ -23,7 +23,7 @@ pprof
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-electron/dist
+qianduan/electron/dist
 
 # IDE
 .idea/
@@ -43,3 +43,6 @@ muslbin/
 
 # Workflows
 **/__pycache__
+
+# Private 52Note cloud backend (maintained in a separate private repository)
+/houduan/

@@ -601,7 +601,7 @@ CLI 可执行文件为 `<安装目录>/resources/kernel/SiYuan-Kernel`，可通�
 
 ## 🙏 鸣谢
 
-思源的诞生离不开众多的开源项目和贡献者，请参考项目源代码 kernel/go.mod、app/package.json 和项目首页。
+思源的诞生离不开众多的开源项目和贡献者，请参考项目源代码 qianduan/kernel/go.mod、qianduan/app/package.json 和项目首页。
 
 思源的成长离不开用户的反馈和宣传推广，感谢所有人对思源的帮助 ❤️
 
