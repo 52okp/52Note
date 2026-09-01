@@ -246,11 +246,13 @@ func InitConf() {
 	confPath := filepath.Join(util.ConfDir, "conf.json")
 	confFileExists := gulu.File.IsExist(confPath)
 	entryVisibilityConfigured := false
+	closeButtonBehaviorVersionConfigured := false
 	if confFileExists {
 		if data, err := os.ReadFile(confPath); err != nil {
 			logging.LogErrorf("load conf [%s] failed: %s", confPath, err)
 		} else {
 			entryVisibilityConfigured = bytes.Contains(data, []byte(`"entryVisibility"`))
+			closeButtonBehaviorVersionConfigured = bytes.Contains(data, []byte(`"closeButtonBehaviorVersion"`))
 			// 解析失败时保留已成功写入的字段；未导出字段（m、userLock）与未触及的导出字段保持 NewAppConf() 初值。
 			if err = gulu.JSON.UnmarshalJSON(data, Conf); err != nil {
 				logging.LogWarnf("parse conf failed, parsed fields retained: %s", err)
@@ -335,6 +337,7 @@ func InitConf() {
 	if nil == Conf.Appearance {
 		Conf.Appearance = conf.NewAppearance()
 	}
+	conf.NormalizeCloseButtonBehavior(Conf.Appearance, closeButtonBehaviorVersionConfigured)
 	entryVisibilityFallback := conf.EntryVisibilityProfileSimple
 	if confFileExists {
 		entryVisibilityFallback = conf.EntryVisibilityProfileFull

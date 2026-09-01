@@ -22,6 +22,20 @@ import (
 	"testing"
 )
 
+func TestNormalizeCloseButtonBehavior(t *testing.T) {
+	legacy := &Appearance{CloseButtonBehavior: 0}
+	NormalizeCloseButtonBehavior(legacy, false)
+	if legacy.CloseButtonBehavior != 1 || legacy.CloseButtonBehaviorVersion != CloseButtonBehaviorVersion {
+		t.Fatalf("unexpected migrated close button behavior: %+v", legacy)
+	}
+
+	configured := &Appearance{CloseButtonBehavior: 0, CloseButtonBehaviorVersion: CloseButtonBehaviorVersion}
+	NormalizeCloseButtonBehavior(configured, true)
+	if configured.CloseButtonBehavior != 0 || configured.CloseButtonBehaviorVersion != CloseButtonBehaviorVersion {
+		t.Fatalf("explicit close button behavior should be preserved: %+v", configured)
+	}
+}
+
 func TestNormalizeEntryVisibilityDefaults(t *testing.T) {
 	entryVisibility := NormalizeEntryVisibility(nil, EntryVisibilityProfileSimple)
 	if entryVisibility.Version != EntryVisibilityVersion || entryVisibility.Active != EntryVisibilityProfileSimple {
