@@ -1,7 +1,7 @@
 {
   "name": "52Note",
   "desktopName": "com.note52.app",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Local-first knowledge management and note-taking",
   "homepage": "https://b3log.org/siyuan",
   "main": "./electron/main.js",
@@ -37,7 +37,7 @@
     "notebook"
   ],
   "author": {
-    "name": "Yunnan Liandi Technology Co., Ltd.",
+    "name": "52Note",
     "email": "845765@qq.com",
     "url": "https://ld246.com"
   },

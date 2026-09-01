@@ -3,7 +3,7 @@ appId: "com.note52.app"
 publish: null
 asar: false
 compression: "normal"
-copyright: "© 2020-present Yunnan Liandi Technology Co., Ltd."
+copyright: "© 2026 52Note"
 artifactName: "52note-${version}-${os}-arm64.${ext}"
 extraMetadata:
   main: "electron/main.js"

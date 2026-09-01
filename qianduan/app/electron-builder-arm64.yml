@@ -3,7 +3,7 @@ appId: "com.note52.app"
 publish: null
 asar: false
 compression: "normal"
-copyright: "© 2020-present Yunnan Liandi Technology Co., Ltd."
+copyright: "© 2026 52Note"
 artifactName: "52note-${version}-${os}-arm64.${ext}"
 extraMetadata:
   main: "electron/main.js"
@@ -24,7 +24,6 @@ win:
       to: "kernel"
   requestedExecutionLevel: "asInvoker"
   signtoolOptions:
-    #certificateSubjectName: "Yunnan Liandi Technology Co., Ltd."
     signingHashAlgorithms: [ 'sha256' ]
     rfc3161TimeStampServer: "http://timestamp.acs.microsoft.com/"
   target:

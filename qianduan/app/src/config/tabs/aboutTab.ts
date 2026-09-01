@@ -103,7 +103,6 @@ const registerAboutInfoGroup = (tab: SettingTabBuilder) => {
         <div class='fn__hr'></div>
         <div class="fn__flex fn__flex-wrap" style="gap: 8px 16px">
             <span>© 2026 52Note</span>
-            <span>云南链滴科技有限公司</span>
             <a href="https://github.com/52okp/52Note" target="_blank" rel="noopener noreferrer">52Note GitHub</a>
             <a href="https://github.com/siyuan-note/siyuan" target="_blank" rel="noopener noreferrer">SiYuan</a>
             <a href="https://github.com/52okp/52Note/blob/master/LICENSE" target="_blank" rel="noopener noreferrer">GNU AGPL-3.0</a>

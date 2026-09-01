@@ -143,20 +143,11 @@ html[data-frontend="browser-desktop"] {
     }
 
     &--login {
-      min-width: 44px;
-      padding: 4px 10px;
-      color: var(--b3-theme-on-primary);
-      font-weight: 500;
-      background-color: var(--b3-theme-primary);
-
-      &:not(.toolbar__item--disabled):hover {
-        background-color: var(--b3-theme-primary);
-        box-shadow: var(--b3-button-shadow);
-      }
-
-      &:active {
-        box-shadow: var(--b3-button-active-shadow);
-      }
+      padding: 4px 6px;
+      color: var(--b3-toolbar-color);
+      font-size: 12px;
+      font-weight: 400;
+      background-color: transparent;
     }
 
     &--win {
