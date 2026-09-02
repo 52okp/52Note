@@ -102,7 +102,7 @@ export const initBar = (app: App) => {
 <div id="barExit" class="ft__error toolbar__item ariaLabel${isInMobileApp() ? "" : " fn__none"}" aria-label="${window.siyuan.languages.safeQuit}">
     <svg><use xlink:href="#iconQuit"></use></svg>
 </div>
-<div id="barMore" class="toolbar__item ariaLabel" aria-label="${window.siyuan.languages.more}">
+<div id="barMore" class="toolbar__item ariaLabel fn__none" aria-label="${window.siyuan.languages.more}">
     <svg><use xlink:href="#iconMore"></use></svg>
 </div>
 <div class="fn__flex" id="windowControls"></div>`;
@@ -122,6 +122,11 @@ export const initBar = (app: App) => {
                 if (!window.siyuan.menus.menu.element.classList.contains("fn__none") &&
                     window.siyuan.menus.menu.element.getAttribute("data-name") === Constants.MENU_BAR_MORE) {
                     window.siyuan.menus.menu.remove();
+                    return;
+                }
+                // 无隐藏项时不应弹出空菜单：重新计算顶栏布局（无溢出会把按钮隐藏），并自愈残留状态
+                if (!(target.getAttribute("data-hideids") || "").trim()) {
+                    resizeTopBar();
                     return;
                 }
                 window.siyuan.menus.menu.remove();
