@@ -57,7 +57,38 @@ type noteWorkspaceList struct {
 }
 
 type noteAccountError struct {
+	Code    string `json:"error"`
 	Message string `json:"message"`
+}
+
+// 服务端（52NoteAdmin）错误消息为英文，这里在客户端本地化为中文展示。
+func localize52NoteAccountError(code, message string) string {
+	if chinese, ok := map[string]string{
+		"invalid_credentials": "邮箱或密码不正确",
+		"email_exists":        "该邮箱已被注册",
+		"invalid_token":       "登录状态已失效，请重新登录",
+		"invalid_request":     "请求参数有误",
+		"not_found":           "资源不存在",
+		"service_unavailable": "认证服务暂不可用，请稍后再试",
+		"internal_error":      "服务器开小差了，请稍后再试",
+	}[code]; ok {
+		return chinese
+	}
+	// 校验类错误不带独立 code，按消息内容映射；未知消息保留原文。
+	if chinese, ok := map[string]string{
+		"password must contain 8 to 128 characters": "密码长度需为 8 到 128 个字符",
+		"display name is too long":                  "昵称过长，请缩短后重试",
+		"invalid email":                             "邮箱格式不正确",
+		"email is already registered":               "该邮箱已被注册",
+		"email or password is incorrect":            "邮箱或密码不正确",
+		"token is invalid or expired":               "登录状态已失效，请重新登录",
+		"resource was not found":                    "资源不存在",
+		"authentication service is unavailable":     "认证服务暂不可用，请稍后再试",
+		"an internal error occurred":                "服务器开小差了，请稍后再试",
+	}[message]; ok {
+		return chinese
+	}
+	return message
 }
 
 func Register52Note(email, password, displayName string) error {
@@ -196,7 +227,7 @@ func request52Note(method, endpoint string, payload any, accessToken string, des
 		var apiError noteAccountError
 		_ = json.NewDecoder(response.Body).Decode(&apiError)
 		if apiError.Message != "" {
-			return errors.New(apiError.Message)
+			return errors.New(localize52NoteAccountError(apiError.Code, apiError.Message))
 		}
 		return fmt.Errorf("%s: HTTP %d", Conf.Language(18), response.StatusCode)
 	}
