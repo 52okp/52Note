@@ -122,7 +122,13 @@ func ServeAPI(ginServer *gin.Engine) {
 
 	ginServer.Handle("POST", "/api/account/login", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, login)
 	ginServer.Handle("POST", "/api/account/register52Note", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, register52Note)
+	ginServer.Handle("POST", "/api/account/verifyRegister52Note", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, verifyRegister52Note)
+	ginServer.Handle("POST", "/api/account/resendRegister52Note", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, resendRegister52Note)
 	ginServer.Handle("POST", "/api/account/login52Note", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, login52Note)
+	ginServer.Handle("POST", "/api/account/requestLoginCode52Note", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, requestLoginCode52Note)
+	ginServer.Handle("POST", "/api/account/loginCode52Note", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, loginCode52Note)
+	ginServer.Handle("POST", "/api/account/requestReset52Note", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, requestReset52Note)
+	ginServer.Handle("POST", "/api/account/confirmReset52Note", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, confirmReset52Note)
 	ginServer.Handle("POST", "/api/account/refresh52Note", model.CheckAuth, model.CheckAdminRole, refresh52Note)
 	ginServer.Handle("POST", "/api/account/logout52Note", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, logout52Note)
 	ginServer.Handle("POST", "/api/account/checkActivationcode", model.CheckAuth, model.CheckAdminRole, model.CheckReadonly, checkActivationcode)

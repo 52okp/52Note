@@ -122,6 +122,7 @@ func account52Note(c *gin.Context, register bool) {
 	displayName, _ := arg["displayName"].(string)
 	var err error
 	if register {
+		// 注册后账号待邮箱验证，不自动登录。
 		err = model.Register52Note(email, password, displayName)
 	} else {
 		err = model.Login52Note(email, password)
@@ -131,7 +132,105 @@ func account52Note(c *gin.Context, register bool) {
 		ret.Msg = err.Error()
 		return
 	}
+	if !register {
+		ret.Data = model.Conf.GetUser()
+	}
+}
+
+func verifyRegister52Note(c *gin.Context) {
+	ret := gulu.Ret.NewResult()
+	defer c.JSON(http.StatusOK, ret)
+	arg, ok := util.JsonArg(c, ret)
+	if !ok {
+		return
+	}
+	email, _ := arg["email"].(string)
+	code, _ := arg["code"].(string)
+	if err := model.VerifyRegistration52Note(email, code); err != nil {
+		ret.Code = -1
+		ret.Msg = err.Error()
+		return
+	}
 	ret.Data = model.Conf.GetUser()
+}
+
+func resendRegister52Note(c *gin.Context) {
+	ret := gulu.Ret.NewResult()
+	defer c.JSON(http.StatusOK, ret)
+	arg, ok := util.JsonArg(c, ret)
+	if !ok {
+		return
+	}
+	email, _ := arg["email"].(string)
+	if err := model.ResendRegistrationCode52Note(email); err != nil {
+		ret.Code = -1
+		ret.Msg = err.Error()
+		return
+	}
+}
+
+func requestLoginCode52Note(c *gin.Context) {
+	ret := gulu.Ret.NewResult()
+	defer c.JSON(http.StatusOK, ret)
+	arg, ok := util.JsonArg(c, ret)
+	if !ok {
+		return
+	}
+	email, _ := arg["email"].(string)
+	if err := model.RequestLoginCode52Note(email); err != nil {
+		ret.Code = -1
+		ret.Msg = err.Error()
+		return
+	}
+}
+
+func loginCode52Note(c *gin.Context) {
+	ret := gulu.Ret.NewResult()
+	defer c.JSON(http.StatusOK, ret)
+	arg, ok := util.JsonArg(c, ret)
+	if !ok {
+		return
+	}
+	email, _ := arg["email"].(string)
+	code, _ := arg["code"].(string)
+	if err := model.LoginWithCode52Note(email, code); err != nil {
+		ret.Code = -1
+		ret.Msg = err.Error()
+		return
+	}
+	ret.Data = model.Conf.GetUser()
+}
+
+func requestReset52Note(c *gin.Context) {
+	ret := gulu.Ret.NewResult()
+	defer c.JSON(http.StatusOK, ret)
+	arg, ok := util.JsonArg(c, ret)
+	if !ok {
+		return
+	}
+	email, _ := arg["email"].(string)
+	if err := model.RequestPasswordReset52Note(email); err != nil {
+		ret.Code = -1
+		ret.Msg = err.Error()
+		return
+	}
+}
+
+func confirmReset52Note(c *gin.Context) {
+	ret := gulu.Ret.NewResult()
+	defer c.JSON(http.StatusOK, ret)
+	arg, ok := util.JsonArg(c, ret)
+	if !ok {
+		return
+	}
+	email, _ := arg["email"].(string)
+	code, _ := arg["code"].(string)
+	newPassword, _ := arg["newPassword"].(string)
+	if err := model.ResetPassword52Note(email, code, newPassword); err != nil {
+		ret.Code = -1
+		ret.Msg = err.Error()
+		return
+	}
 }
 
 func refresh52Note(c *gin.Context) {

@@ -66,6 +66,7 @@ func localize52NoteAccountError(code, message string) string {
 	if chinese, ok := map[string]string{
 		"invalid_credentials": "邮箱或密码不正确",
 		"email_exists":        "该邮箱已被注册",
+		"email_not_verified":  "邮箱尚未验证，请先完成邮箱验证",
 		"invalid_token":       "登录状态已失效，请重新登录",
 		"invalid_request":     "请求参数有误",
 		"not_found":           "资源不存在",
@@ -81,6 +82,7 @@ func localize52NoteAccountError(code, message string) string {
 		"invalid email":                             "邮箱格式不正确",
 		"email is already registered":               "该邮箱已被注册",
 		"email or password is incorrect":            "邮箱或密码不正确",
+		"email has not been verified yet":           "邮箱尚未验证，请先完成邮箱验证",
 		"token is invalid or expired":               "登录状态已失效，请重新登录",
 		"resource was not found":                    "资源不存在",
 		"authentication service is unavailable":     "认证服务暂不可用，请稍后再试",
@@ -91,29 +93,96 @@ func localize52NoteAccountError(code, message string) string {
 	return message
 }
 
+// Register52Note 注册：服务端创建账号并向邮箱发送 6 位验证码；
+// 验证前不签发令牌，需再调用 VerifyRegistration52Note 完成验证并登录。
 func Register52Note(email, password, displayName string) error {
-	return authenticate52Note("/api/v1/auth/register", email, password, displayName)
+	payload := account52NotePayload(email, password, displayName)
+	return request52Note(http.MethodPost, "/api/v1/auth/register", payload, "", nil)
+}
+
+// VerifyRegistration52Note 提交注册邮箱验证码：通过即创建会话并登录。
+func VerifyRegistration52Note(email, code string) error {
+	payload := account52NotePayload(email, "", "")
+	payload["code"] = strings.TrimSpace(code)
+	var result noteAccountResult
+	if err := request52Note(http.MethodPost, "/api/v1/auth/register/verify", payload, "", &result); err != nil {
+		return err
+	}
+	return activate52Note(result)
+}
+
+// ResendRegistrationCode52Note 重发注册邮箱验证码。
+func ResendRegistrationCode52Note(email string) error {
+	return request52Note(http.MethodPost, "/api/v1/auth/register/verify/resend", map[string]string{
+		"email": strings.TrimSpace(email),
+	}, "", nil)
 }
 
 func Login52Note(email, password string) error {
-	return authenticate52Note("/api/v1/auth/login", email, password, "")
+	payload := account52NotePayload(email, password, "")
+	var result noteAccountResult
+	if err := request52Note(http.MethodPost, "/api/v1/auth/login", payload, "", &result); err != nil {
+		return err
+	}
+	return activate52Note(result)
 }
 
-func authenticate52Note(endpoint, email, password, displayName string) error {
+// RequestLoginCode52Note 请求邮箱登录验证码。
+func RequestLoginCode52Note(email string) error {
+	payload := account52NotePayload(email, "", "")
+	delete(payload, "password")
+	delete(payload, "display_name")
+	return request52Note(http.MethodPost, "/api/v1/auth/login-code/request", payload, "", nil)
+}
+
+// LoginWithCode52Note 用邮箱验证码登录。
+func LoginWithCode52Note(email, code string) error {
+	payload := account52NotePayload(email, "", "")
+	payload["code"] = strings.TrimSpace(code)
+	var result noteAccountResult
+	if err := request52Note(http.MethodPost, "/api/v1/auth/login-code/confirm", payload, "", &result); err != nil {
+		return err
+	}
+	return activate52Note(result)
+}
+
+// RequestPasswordReset52Note 请求密码重置验证码。
+func RequestPasswordReset52Note(email string) error {
+	return request52Note(http.MethodPost, "/api/v1/auth/password-reset/request", map[string]string{
+		"email": strings.TrimSpace(email),
+	}, "", nil)
+}
+
+// ResetPassword52Note 用验证码重置密码。
+func ResetPassword52Note(email, code, newPassword string) error {
+	return request52Note(http.MethodPost, "/api/v1/auth/password-reset/confirm", map[string]string{
+		"email":        strings.TrimSpace(email),
+		"code":         strings.TrimSpace(code),
+		"new_password": newPassword,
+	}, "", nil)
+}
+
+func account52NotePayload(email, password, displayName string) map[string]string {
 	hostname, _ := os.Hostname()
 	if strings.TrimSpace(hostname) == "" {
 		hostname = "52Note"
 	}
 	payload := map[string]string{
 		"email":        strings.TrimSpace(email),
-		"password":     password,
 		"display_name": strings.TrimSpace(displayName),
 		"device_name":  hostname,
 		"platform":     account52NotePlatform(),
 	}
-	var result noteAccountResult
-	if err := request52Note(http.MethodPost, endpoint, payload, "", &result); err != nil {
-		return err
+	if password != "" {
+		payload["password"] = password
+	}
+	return payload
+}
+
+// activate52Note 校验通过后初始化工作空间并持久化登录态。
+func activate52Note(result noteAccountResult) error {
+	if result.Tokens.AccessToken == "" || result.Tokens.RefreshToken == "" {
+		return errors.New(localize52NoteAccountError("invalid_token", "token is invalid or expired"))
 	}
 	workspaceID, err := ensure52NoteWorkspace(result.Tokens.AccessToken)
 	if err != nil {
