@@ -210,7 +210,11 @@ export const exitSiYuan = async (setCurrentWorkspace = true) => {
         await saveScroll(window.siyuan.mobile.editor.protyle);
     }
     /// #endif
-    fetchPost("/api/system/exit", {force: false, setCurrentWorkspace}, (response) => {
+    fetchPost("/api/system/exit", {
+        force: false,
+        setCurrentWorkspace,
+        execInstallPkg: 1, // 不把安装包交给宿主询问：有更新走左下角按钮，不打扰退出
+    }, (response) => {
         if (response.code === 1) { // 同步执行失败
             const msgId = showMessage(response.msg, response.data.closeTimeout, "error");
             const buttonElement = document.querySelector(`#message [data-id="${msgId}"] button`);
@@ -220,7 +224,7 @@ export const exitSiYuan = async (setCurrentWorkspace = true) => {
                         installNewVersion(response.data.installPkgPath, setCurrentWorkspace);
                         return;
                     }
-                    fetchPost("/api/system/exit", {force: true, setCurrentWorkspace}, () => {
+                    fetchPost("/api/system/exit", {force: true, setCurrentWorkspace, execInstallPkg: 1}, () => {
                         /// #if !BROWSER
                         ipcRenderer.send(Constants.SIYUAN_QUIT, location.port);
                         /// #else

@@ -3,12 +3,18 @@ import {exportLayout} from "../layout/util";
 /// #endif
 import {hideMessage, showMessage} from "../dialog/message";
 import {setStorageVal} from "../protyle/util/compatibility";
+import {showUpdateReadyPill} from "./updatePill";
 import {Constants} from "../constants";
 import {fetchPost} from "./fetch";
 import {isBrowser} from "./functions";
 
 export const processMessage = (response: IWebSocketData) => {
     if ("msg" === response.cmd) {
+        // 新版本安装包已下载就绪：左下角常驻更新按钮，不再弹提示条，也不在退出时询问
+        if (response.code === 0 && response.data?.id === "update-pkg-ready") {
+            showUpdateReadyPill();
+            return false;
+        }
         const id = showMessage(response.msg, response.data.closeTimeout, response.code === 0 ? "info" : "error", response.data.id);
         document.querySelector("#message #addMicrosoftDefenderExclusion")?.addEventListener("click", (event) => {
             (event.target as HTMLElement).innerHTML = '<svg class="fn__rotate" style="margin-right: 0;"><use xlink:href="#iconRefresh"></use></svg>';
