@@ -41,14 +41,14 @@ export const showMessage = (message: string, timeout = 6000, type = "info", mess
     if (!messagesElement) {
         let tempMessages = document.getElementById("tempMessage");
         if (!tempMessages) {
-            document.body.insertAdjacentHTML("beforeend", `<div style="font-size: 14px;top: 22px;position: fixed;z-index: 100;right: 30px;line-height: 20px;word-break: break-word;display: flex;flex-direction: column;align-items: flex-end;" 
+            document.body.insertAdjacentHTML("beforeend", `<div style="font-size: 14px;top: 22px;position: fixed;z-index: 100;right: 30px;line-height: 20px;word-break: break-word;display: flex;flex-direction: column;align-items: flex-end;"
 id="tempMessage"></div>`);
             tempMessages = document.getElementById("tempMessage");
         }
-        tempMessages.insertAdjacentHTML("beforeend", `<div style="background: white;padding: 8px 16px;border-radius: 6px;margin-bottom: 16px;"  
-data-timeout="${timeout}" 
-data-type="${type}" 
-data-message-id="${messageId || ""}">${message}</div>`);
+        tempMessages.insertAdjacentHTML("beforeend", `<div style="background:#fff;color:#1f2328;border:1px solid #e5e6eb;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.08);padding:10px 14px;margin-bottom: 12px;display:flex;align-items:center;"
+data-timeout="${timeout}"
+data-type="${type}"
+data-message-id="${messageId || ""}">${snackbarIconHTML(type)}<span>${message}</span></div>`);
         return;
     }
     const id = messageId || genUUID();
@@ -56,7 +56,7 @@ data-message-id="${messageId || ""}">${message}</div>`);
     const messageVersion = message;
     if (existElement) {
         window.clearTimeout(parseInt(existElement.getAttribute("data-timeoutid")));
-        existElement.innerHTML = `<div data-type="textMenu" class="b3-snackbar__content${timeout === 0 ? " b3-snackbar__content--close" : ""}">${messageVersion}</div>${timeout === 0 ? '<svg class="b3-snackbar__close"><use xlink:href="#iconCloseRound"></use></svg>' : ""}`;
+        existElement.innerHTML = `<div data-type="textMenu" class="b3-snackbar__content${timeout === 0 ? " b3-snackbar__content--close" : ""}" style="display:flex;align-items:center;background:#fff;color:#1f2328;">${snackbarIconHTML(type)}<span>${messageVersion}</span></div>${timeout === 0 ? '<svg class="b3-snackbar__close"><use xlink:href="#iconCloseRound"></use></svg>' : ""}`;
         if (type === "error") {
             existElement.classList.add("b3-snackbar--error");
         } else {
@@ -70,7 +70,7 @@ data-message-id="${messageId || ""}">${message}</div>`);
         }
         return;
     }
-    let messageHTML = `<div data-id="${id}" class="b3-snackbar--hide b3-snackbar${type === "error" ? " b3-snackbar--error" : ""}"><div data-type="textMenu" class="b3-snackbar__content${timeout === 0 ? " b3-snackbar__content--close" : ""}">${messageVersion}</div>`;
+    let messageHTML = `<div data-id="${id}" class="b3-snackbar--hide b3-snackbar" style="background:#fff;color:#1f2328;border:1px solid #e5e6eb;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.10);"><div data-type="textMenu" class="b3-snackbar__content${timeout === 0 ? " b3-snackbar__content--close" : ""}" style="display:flex;align-items:center;">${snackbarIconHTML(type)}<span>${messageVersion}</span></div>`;
     if (timeout === 0) {
         messageHTML += '<svg class="b3-snackbar__close"><use xlink:href="#iconCloseRound"></use></svg>';
     } else if (timeout !== -1) { // -1 时需等待请求完成后手动关闭
@@ -96,6 +96,14 @@ data-message-id="${messageId || ""}">${message}</div>`);
         behavior: "smooth"
     });
     return id;
+};
+
+// 圆形感叹号图标：错误用红、信息用蓝
+const snackbarIconHTML = (type: string) => {
+    if (type === "error") {
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" style="width:16px;height:16px;flex-shrink:0;margin-right:8px;vertical-align:-2px"><circle cx="8" cy="8" r="7.5" fill="#ff4d4f"/><rect x="7.3" y="3.8" width="1.4" height="5.2" rx="0.7" fill="#fff"/><circle cx="8" cy="11.2" r="0.85" fill="#fff"/></svg>';
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" style="width:16px;height:16px;flex-shrink:0;margin-right:8px;vertical-align:-2px"><circle cx="8" cy="8" r="7.5" fill="#1677ff"/><rect x="7.3" y="7" width="1.4" height="4.6" rx="0.7" fill="#fff"/><circle cx="8" cy="4.3" r="0.85" fill="#fff"/></svg>';
 };
 
 export const hideMessage = (id?: string) => {

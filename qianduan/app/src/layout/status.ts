@@ -84,7 +84,7 @@ export const initStatus = (isWindow = false) => {
                 /// #endif
                 window.siyuan.menus.menu.append(new MenuItem({
                     label: window.siyuan.languages["_trayMenu"].officialWebsite,
-                    iconHTML: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="b3-menu__icon" style="width:16px;height:16px;flex-shrink:0"><rect width="16" height="16" rx="4" fill="#2563eb"/><text x="8" y="11.5" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="9" font-weight="600">52</text></svg>',
+                    iconHTML: '<img src="../../icon.png" alt="52Note" style="width:16px;height:16px;border-radius:3px;object-fit:cover;flex-shrink:0">',
                     click: () => {
                         window.open("https://docs.52okp.com");
                     }
