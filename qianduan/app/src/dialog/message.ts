@@ -53,7 +53,7 @@ data-message-id="${messageId || ""}">${message}</div>`);
     }
     const id = messageId || genUUID();
     const existElement = messagesElement.querySelector(`.b3-snackbar[data-id="${id}"]`);
-    const messageVersion = message + (type === "error" ? " v" + Constants.SIYUAN_VERSION : "");
+    const messageVersion = message;
     if (existElement) {
         window.clearTimeout(parseInt(existElement.getAttribute("data-timeoutid")));
         existElement.innerHTML = `<div data-type="textMenu" class="b3-snackbar__content${timeout === 0 ? " b3-snackbar__content--close" : ""}">${messageVersion}</div>${timeout === 0 ? '<svg class="b3-snackbar__close"><use xlink:href="#iconCloseRound"></use></svg>' : ""}`;

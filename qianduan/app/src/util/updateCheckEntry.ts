@@ -21,8 +21,8 @@ const createEntry = () => {
     el.textContent = window.siyuan.languages?.checkUpdate || "检查更新";
     el.title = "检查 52Note 是否有新版本";
     el.style.cssText =
-        "font-size:12px;line-height:1;padding:0 8px;cursor:pointer;user-select:none;" +
-        "color:var(--b3-theme-primary,#1890ff);opacity:0.85;transition:opacity .2s;";
+        "font-size:12px;line-height:1;padding:0 6px;cursor:pointer;user-select:none;" +
+        "color:inherit;opacity:0.85;transition:opacity .2s;";
     el.addEventListener("mouseenter", () => {
         el.style.opacity = "1";
         el.style.textDecoration = "underline";
