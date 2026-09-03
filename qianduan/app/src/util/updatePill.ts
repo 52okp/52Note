@@ -1,6 +1,7 @@
 import {Constants} from "../constants";
 import {confirmDialog} from "../dialog/confirmDialog";
 import {showMessage} from "../dialog/message";
+import {hideUpdateCheckEntry, showUpdateCheckEntry} from "./updateCheckEntry";
 /// #if !BROWSER
 import {ipcRenderer} from "electron";
 /// #endif
@@ -12,6 +13,8 @@ const pillId = "updateReadyPill";
 export const hideUpdateReadyPill = () => {
     const pill = document.getElementById(pillId);
     pill?.remove();
+    // pill 关闭后恢复左下角常驻的“检查更新”入口
+    showUpdateCheckEntry();
 };
 
 export const showUpdateReadyPill = () => {
@@ -21,6 +24,8 @@ export const showUpdateReadyPill = () => {
     if (document.querySelector("html").classList.contains("fn__none")) {
         return;
     }
+    // pill 弹出时隐藏左下角常驻的“检查更新”入口，避免重叠
+    hideUpdateCheckEntry();
     const container = document.createElement("div");
     container.id = pillId;
     container.style.cssText =

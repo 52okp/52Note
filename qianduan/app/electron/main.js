@@ -647,8 +647,8 @@ const validateUpdateInstallPackage = (request, requestedInstallPkgPath) => {
 
         const packageName = path.basename(installPkgPath);
         const validPackageName = process.platform === "win32"
-            ? /^siyuan-.+-win(?:-arm64)?\.exe$/i.test(packageName)
-            : /^siyuan-.+-mac(?:-arm64)?\.dmg$/i.test(packageName);
+            ? /^(?:siyuan|52note)-.+-win(?:-arm64)?\.exe$/i.test(packageName)
+            : /^(?:siyuan|52note)-.+-mac(?:-arm64)?\.dmg$/i.test(packageName);
         if (!validPackageName || !fs.statSync(installPkgPath).isFile()) {
             writeLog("rejected invalid update install package [path=" + installPkgPath + "]");
             return;

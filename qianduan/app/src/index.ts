@@ -54,6 +54,9 @@ import {setTitle} from "./util/processTitle";
 import {ensureUILayout} from "./util/ensureUILayout";
 import {applyEntryVisibility} from "./config/entryVisibility/runtime";
 import {removeBlockPanelEditors} from "./block/panelRemoval";
+/// #if !BROWSER
+import {initUpdateCheckEntry} from "./util/updateCheckEntry";
+/// #endif
 
 export class App {
     public plugins: import("./plugin").Plugin[] = [];
@@ -311,6 +314,10 @@ export class App {
                         /// #endif
                         window.siyuan.isReady = true;
                         mainWs.flushMainMessages();
+                        /// #if !BROWSER
+                        // 桌面客户端左下角常驻“检查更新”入口
+                        initUpdateCheckEntry();
+                        /// #endif
                     });
                 });
             });
