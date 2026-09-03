@@ -13,6 +13,7 @@ let escHandler: ((e: KeyboardEvent) => void) | null = null;
 let activeMode: Mode = "login";
 let activeApp: App | undefined;
 let sentEmail = "";          // 最近一次发码的目标邮箱（注册/重置都共用展示）
+let pendingCode = "";        // 从 register-send 携入的验证码（verify 阶段预填用）
 let loginStash = "";        // 切到忘记密码时保留已填的邮箱
 let countdownTimer: number | null = null;
 
@@ -75,6 +76,11 @@ const switchMode = (nextMode: Mode, carry: Record<string, string> = {}) => {
     }
     if (typeof carry.saveLoginEmail === "string") {
         loginStash = carry.saveLoginEmail;
+    }
+    if (typeof carry.code === "string") {
+        pendingCode = carry.code;
+    } else if (nextMode !== "register-verify") {
+        pendingCode = "";
     }
     renderInto();
 };
@@ -198,6 +204,13 @@ const registerSendMarkup = () => `
       <span>邮箱</span>
       <input type="email" data-field="reg-email" placeholder="用于接收验证码" autocomplete="email" required />
     </label>
+    <div class="account-dialog-row">
+      <label class="account-dialog-row__field">
+        <span>邮箱验证码</span>
+        <input type="text" inputmode="numeric" pattern="\\d{6}" data-field="reg-code" placeholder="收码后可填写" maxlength="6" />
+      </label>
+      <button type="button" class="account-dialog-secondary" data-action="send-register-code" disabled>获取验证码</button>
+    </div>
     <label>
       <span>昵称（选填）</span>
       <input type="text" data-field="reg-name" placeholder="留空则用邮箱前缀" autocomplete="nickname" />
@@ -317,6 +330,15 @@ const bindEvents = () => {
         ?.addEventListener("click", () => submitRegister());
     overlay.querySelector<HTMLElement>("[data-action=verify-register]")
         ?.addEventListener("click", () => submitVerifyRegister());
+    overlay.querySelector<HTMLElement>("[data-action=send-register-code]")
+        ?.addEventListener("click", (event) => submitSendRegisterCode(event.currentTarget as HTMLButtonElement));
+    overlay.querySelector<HTMLInputElement>("[data-field=reg-email]")
+        ?.addEventListener("input", (event) => {
+            const button = overlay?.querySelector<HTMLButtonElement>("[data-action=send-register-code]");
+            if (!button) return;
+            const valid = /\S+@\S+\.\S+/.test((event.target as HTMLInputElement).value.trim());
+            button.disabled = !valid;
+        });
     overlay.querySelector<HTMLElement>("[data-action=reset-submit]")
         ?.addEventListener("click", () => submitReset());
     overlay.querySelector<HTMLElement>("[data-action=reset-confirm]")
@@ -353,6 +375,10 @@ const bindEvents = () => {
     }
     if (activeMode === "register-verify") {
         setFieldValue("reg-email", sentEmail);
+        if (pendingCode) {
+            setFieldValue("verify-code", pendingCode);
+            pendingCode = "";
+        }
     }
     if (activeMode === "reset-verify") {
         setFieldValue("reset-email", sentEmail);
@@ -397,6 +423,7 @@ const submitLogin = () => {
 const submitRegister = () => {
     const email = fieldValue("reg-email");
     const name = fieldValue("reg-name");
+    const code = fieldValue("reg-code");
     const password = overlay?.querySelector<HTMLInputElement>("[data-field=reg-password]")?.value ?? "";
     if (!email || !password) {
         showMessage("请填写邮箱与密码", 2000);
@@ -409,7 +436,7 @@ const submitRegister = () => {
     disableSubmit("register-submit", true);
     fetchPost("/api/account/register52Note", {email, password, displayName: name}, () => {
         showMessage("注册请求已发送，请在邮箱查收验证码", 2500);
-        switchMode("register-verify", {email});
+        switchMode("register-verify", {email, code});
     }, undefined, (response: IWebSocketData) => {
         showMessage(response?.msg ?? "注册失败", 3000);
     }).finally?.(() => {
@@ -417,8 +444,27 @@ const submitRegister = () => {
     });
 };
 
-const submitVerifyRegister = () => {
+const submitSendRegisterCode = (button: HTMLButtonElement) => {
+    if (button.disabled) {
+        return;
+    }
     const email = fieldValue("reg-email");
+    if (!email) {
+        showMessage("请先填写邮箱", 2000);
+        return;
+    }
+    button.disabled = true;
+    fetchPost("/api/account/resendRegister52Note", {email}, () => {
+        showMessage("验证码已发送，请在邮箱查收", 2500);
+        startResendCountdown(button);
+    }, undefined, (response: IWebSocketData) => {
+        showMessage(response?.msg ?? "发送失败，请稍后再试", 3000);
+        button.disabled = false;
+    });
+};
+
+const submitVerifyRegister = () => {
+    const email = sentEmail;
     const code = (overlay?.querySelector<HTMLInputElement>("[data-field=verify-code]")?.value ?? "").trim();
     if (!email || !code) {
         showMessage("请输入 6 位验证码", 2000);
