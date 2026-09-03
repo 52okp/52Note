@@ -95,16 +95,16 @@ export const initStatus = (isWindow = false) => {
                 /// #endif
                 window.siyuan.menus.menu.append(new MenuItem({
                     label: window.siyuan.languages["_trayMenu"].officialWebsite,
-                    icon: "iconSiYuan",
+                    iconHTML: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="b3-menu__icon" style="width:16px;height:16px;flex-shrink:0"><rect width="16" height="16" rx="4" fill="#2563eb"/><text x="8" y="11.5" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="9" font-weight="600">52</text></svg>',
                     click: () => {
-                        window.open("https://b3log.org/siyuan");
+                        window.open("https://docs.52okp.com");
                     }
                 }).element);
                 window.siyuan.menus.menu.append(new MenuItem({
                     label: window.siyuan.languages["_trayMenu"].openSource,
                     icon: "iconGithub",
                     click: () => {
-                        window.open("https://github.com/siyuan-note/siyuan");
+                        window.open("https://github.com/52okp/52Note");
                     }
                 }).element);
                 const rect = target.getBoundingClientRect();
