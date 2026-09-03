@@ -1519,11 +1519,11 @@ app.whenReady().then(() => {
             },
         }, {
             label: lang.officialWebsite, click: () => {
-                shell.openExternal("https://b3log.org/siyuan/");
+                shell.openExternal("https://docs.52okp.com");
             },
         }, {
             label: lang.openSource, click: () => {
-                shell.openExternal("https://github.com/siyuan-note/siyuan");
+                shell.openExternal("https://github.com/52okp/52Note");
             },
         }, {
             label: lang.resetWindow, type: "checkbox", click: v => {
