@@ -3,12 +3,15 @@ import "../assets/scss/component/account-dialog.scss";
 import {fetchPost} from "../util/fetch";
 import {showMessage} from "./message";
 import {onSetaccount} from "../config/tabs/accountUi";
+import {syncGuide} from "../sync/syncGuide";
+import type {App} from "../index";
 
-type Mode = "login" | "register-send" | "register-verify" | "reset-send" | "reset-verify";
+type Mode = "account" | "login" | "register-send" | "register-verify" | "reset-send" | "reset-verify";
 
 let overlay: HTMLElement | null = null;
 let escHandler: ((e: KeyboardEvent) => void) | null = null;
 let activeMode: Mode = "login";
+let activeApp: App | undefined;
 let sentEmail = "";          // 最近一次发码的目标邮箱（注册/重置都共用展示）
 let loginStash = "";        // 切到忘记密码时保留已填的邮箱
 let countdownTimer: number | null = null;
@@ -20,7 +23,8 @@ const stopCountdown = () => {
     }
 };
 
-export const openAccountDialog = (initialMode: Mode = "login") => {
+export const openAccountDialog = (initialMode: Mode = "login", app?: App) => {
+    activeApp = app;
     if (overlay) {
         if (initialMode !== activeMode) {
             stopCountdown();
@@ -113,6 +117,8 @@ const escapeHtml = (raw: string): string =>
 
 const renderByMode = (): string => {
     switch (activeMode) {
+        case "account":
+            return dialogFrame("当前账号", "账号管理", accountMarkup(), true);
         case "register-send":
             return dialogFrame("创建账号", "使用邮箱注册免费账号", registerSendMarkup());
         case "register-verify":
@@ -122,14 +128,27 @@ const renderByMode = (): string => {
         case "reset-verify":
             return dialogFrame("重置密码", "请设置新密码", resetVerifyMarkup(), true);
         default:
-            return dialogFrame("欢迎回来", "登录你的墨站站会员账号", loginMarkup());
+            return dialogFrame("欢迎回来", "登录你的账号", loginMarkup(), true);
     }
+};
+
+const accountMarkup = () => {
+    const user = window.siyuan.user;
+    const displayName = escapeHtml(user?.userNickname || user?.userName || "");
+    const email = escapeHtml(user?.userName || "");
+    return `
+  <div class="account-dialog-account">
+    <div class="account-dialog-account-avatar">${displayName.slice(0, 1).toUpperCase() || "U"}</div>
+    <div class="account-dialog-account-name">${displayName || "52Note 用户"}</div>
+    <div class="account-dialog-account-email">${email}</div>
+    <button class="account-dialog-primary" data-action="sync-now">立即同步</button>
+    <button class="account-dialog-logout" data-action="logout">退出登录</button>
+  </div>`;
 };
 
 const dialogFrame = (title: string, subtitle: string, body: string, skipDivider = false) => `
   <div class="account-dialog-card" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
     <button class="account-dialog-close" type="button" data-action="close" aria-label="关闭">×</button>
-    <div class="account-dialog-brand">52okp</div>
     <h1 class="account-dialog-title">${escapeHtml(title)}</h1>
     <p class="account-dialog-subtitle">${escapeHtml(subtitle)}</p>
     ${skipDivider ? "" : "<div class=\"account-dialog-divider\"><span>其他登录方式</span></div>"}
@@ -140,6 +159,8 @@ const dialogFrame = (title: string, subtitle: string, body: string, skipDivider 
 
 const actionRow = () => {
     switch (activeMode) {
+        case "account":
+            return "";
         case "register-send":
             return "<div class=\"account-dialog-footer\">已经有账号？<a data-action=\"go-login\">返回登录</a></div>";
         case "register-verify":
@@ -265,6 +286,15 @@ const bindEvents = () => {
     overlay.querySelector<HTMLElement>("[data-action=close]")
         ?.addEventListener("click", closeAccountDialog);
 
+    // 已登录账号面板：立即同步 / 退出登录
+    overlay.querySelector<HTMLElement>("[data-action=sync-now]")
+        ?.addEventListener("click", () => {
+            closeAccountDialog();
+            syncGuide(activeApp);
+        });
+    overlay.querySelector<HTMLElement>("[data-action=logout]")
+        ?.addEventListener("click", () => submitLogout());
+
     overlay.querySelector<HTMLInputElement>("[data-field=login-password]")
         ?.addEventListener("keydown", (e) => submitByEnter(e, "login-submit"));
     overlay.querySelector<HTMLInputElement>("[data-field=reg-password]")
@@ -327,6 +357,21 @@ const bindEvents = () => {
     if (activeMode === "reset-verify") {
         setFieldValue("reset-email", sentEmail);
     }
+};
+
+const submitLogout = () => {
+    disableSubmit("logout", true);
+    fetchPost("/api/account/logout52Note", {}, () => {
+        window.siyuan.user = null;
+        onSetaccount();
+        showMessage("已退出登录", 1500);
+        // 退出后回到登录面板，便于立即换号
+        switchMode("login", {});
+    }, undefined, (response: IWebSocketData) => {
+        showMessage(response?.msg ?? "退出失败", 3000);
+    }).finally?.(() => {
+        disableSubmit("logout", false);
+    });
 };
 
 const submitLogin = () => {

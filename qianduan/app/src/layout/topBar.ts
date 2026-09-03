@@ -5,7 +5,6 @@ import {
 } from "../protyle/util/compatibility";
 import {exitSiYuan, processSync} from "../dialog/processSystem";
 import {goBack, goForward} from "../util/backForward";
-import {syncGuide} from "../sync/syncGuide";
 import {workspaceMenu} from "../menus/workspace";
 import {MenuItem} from "../menus/Menu";
 import {setMode} from "../util/assets";
@@ -167,10 +166,11 @@ export const initBar = (app: App) => {
                 break;
             } else if (targetId === "barSync") {
                 if (window.siyuan.user) {
-                    syncGuide(app);
+                    // 已登录：弹出账号面板（当前账号 + 立即同步 + 退出登录）
+                    openAccountDialog("account", app);
                 } else {
-                    // 未登录用户：直接弹出独立的登录/注册对话框，不再跳进设置页
-                    openAccountDialog();
+                    // 未登录：直接弹出独立的登录/注册对话框，不再跳进设置页
+                    openAccountDialog("login", app);
                 }
                 event.stopPropagation();
                 break;

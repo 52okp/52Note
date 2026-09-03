@@ -11,7 +11,6 @@ import {genConfigItemMainHtml, genConfigItemName} from "../render/fragments";
 import {getLANSyncSearchAvailability, getSyncProviderConfigKeywords} from "./syncUi";
 import {mountLANSyncStatus, patchSyncConfig} from "./syncRuntime";
 import {openHistory} from "../../history/history";
-import {registerAccountGroup} from "./accountUi";
 
 const registerSyncGroup = (tab: SettingTabBuilder) => {
     const group = tab.group("sync", window.siyuan.languages.configGroupSync);
@@ -269,7 +268,7 @@ const mountRepoKey = (root: HTMLElement) => {
 };
 
 export const registerSyncTab = (tab: SettingTabBuilder) => {
-    registerAccountGroup(tab);
+    // 账号登录/注册 UI 已迁移至顶栏独立弹窗（accountDialog），设置面板不再提供账号区块
     registerSyncGroup(tab);
     registerRepoGroup(tab);
 };

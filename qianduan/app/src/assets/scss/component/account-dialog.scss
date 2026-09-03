@@ -244,3 +244,79 @@ html[data-theme="dark"] .account-dialog-close:hover {
   background: rgb(255 255 255 / 8%);
   color: rgb(255 255 255 / 85%);
 }
+
+.account-dialog-account {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.account-dialog-account-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgb(65 135 255 / 12%);
+  color: #4187ff;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 56px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.account-dialog-account-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(0 0 0 / 88%);
+}
+
+.account-dialog-account-email {
+  font-size: 13px;
+  color: rgb(0 0 0 / 50%);
+  margin-bottom: 10px;
+}
+
+.account-dialog-logout {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border: 1px solid rgb(0 0 0 / 12%);
+  border-radius: 10px;
+  background: transparent;
+  color: rgb(0 0 0 / 70%);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.account-dialog-logout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.account-dialog-logout:not(:disabled):hover {
+  background: rgb(0 0 0 / 5%);
+}
+
+html[data-theme="dark"] .account-dialog-account-name {
+  color: rgb(255 255 255 / 92%);
+}
+
+html[data-theme="dark"] .account-dialog-account-email {
+  color: rgb(255 255 255 / 55%);
+}
+
+html[data-theme="dark"] .account-dialog-account-avatar {
+  background: rgb(65 135 255 / 20%);
+  color: #8ab4ff;
+}
+
+html[data-theme="dark"] .account-dialog-logout {
+  border-color: rgb(255 255 255 / 18%);
+  color: rgb(255 255 255 / 75%);
+}
+
+html[data-theme="dark"] .account-dialog-logout:not(:disabled):hover {
+  background: rgb(255 255 255 / 8%);
+}
