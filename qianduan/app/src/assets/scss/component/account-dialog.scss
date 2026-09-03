@@ -1,0 +1,246 @@
+.account-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 45%);
+  animation: account-dialog-fade 0.18s ease-out;
+}
+
+@keyframes account-dialog-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.account-dialog-card {
+  position: relative;
+  width: min(440px, 92vw);
+  padding: 32px 36px 24px;
+  background: #ffffff;
+  color: rgb(0 0 0 / 85%);
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 22%);
+  font-size: 14px;
+  animation: account-dialog-pop 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes account-dialog-pop {
+  from {
+    transform: translateY(8px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.account-dialog-brand {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #4187ff;
+  text-align: center;
+}
+
+.account-dialog-title {
+  margin: 6px 0 4px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  color: rgb(0 0 0 / 88%);
+}
+
+.account-dialog-subtitle {
+  margin: 0 0 18px;
+  font-size: 13px;
+  color: rgb(0 0 0 / 50%);
+  text-align: center;
+}
+
+.account-dialog-divider {
+  position: relative;
+  margin: 4px 0 14px;
+  text-align: center;
+  font-size: 12px;
+  color: rgb(0 0 0 / 45%);
+}
+
+.account-dialog-divider::before,
+.account-dialog-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 36%;
+  height: 1px;
+  background: rgb(0 0 0 / 10%);
+}
+
+.account-dialog-divider::before {
+  left: 0;
+}
+
+.account-dialog-divider::after {
+  right: 0;
+}
+
+.account-dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-dialog-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: rgb(0 0 0 / 65%);
+}
+
+.account-dialog-form input {
+  padding: 11px 14px;
+  border: 1px solid #e6e8ed;
+  border-radius: 10px;
+  background: #fafbfc;
+  font-size: 14px;
+  color: rgb(0 0 0 / 88%);
+  outline: none;
+  transition: border-color 0.15s, background-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.account-dialog-form input:focus {
+  border-color: #4187ff;
+  background: #ffffff;
+}
+
+.account-dialog-primary {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 10px;
+  background: #4187ff;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.account-dialog-primary:disabled {
+  background: rgb(65 135 255 / 50%);
+  cursor: not-allowed;
+}
+
+.account-dialog-primary:not(:disabled):hover {
+  background: #2f7ae6;
+}
+
+.account-dialog-helper,
+.account-dialog-footer {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 12px;
+  color: rgb(0 0 0 / 55%);
+}
+
+.account-dialog-footer {
+  font-size: 13px;
+  margin-top: 18px;
+}
+
+.account-dialog-helper a,
+.account-dialog-footer a {
+  color: #4187ff;
+  text-decoration: none;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+.account-dialog-helper a:hover,
+.account-dialog-footer a:hover {
+  text-decoration: underline;
+}
+
+.account-dialog-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: rgb(0 0 0 / 40%);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.account-dialog-close:hover {
+  background: rgb(0 0 0 / 6%);
+  color: rgb(0 0 0 / 80%);
+}
+
+html[data-theme="dark"] .account-dialog-overlay {
+  background: rgb(0 0 0 / 60%);
+}
+
+html[data-theme="dark"] .account-dialog-card {
+  background: #2e2e32;
+  color: rgb(255 255 255 / 88%);
+  box-shadow: 0 16px 56px rgb(0 0 0 / 55%);
+}
+
+html[data-theme="dark"] .account-dialog-title {
+  color: rgb(255 255 255 / 92%);
+}
+
+html[data-theme="dark"] .account-dialog-subtitle,
+html[data-theme="dark"] .account-dialog-helper,
+html[data-theme="dark"] .account-dialog-footer {
+  color: rgb(255 255 255 / 55%);
+}
+
+html[data-theme="dark"] .account-dialog-divider {
+  color: rgb(255 255 255 / 45%);
+}
+
+html[data-theme="dark"] .account-dialog-divider::before,
+html[data-theme="dark"] .account-dialog-divider::after {
+  background: rgb(255 255 255 / 12%);
+}
+
+html[data-theme="dark"] .account-dialog-form label {
+  color: rgb(255 255 255 / 65%);
+}
+
+html[data-theme="dark"] .account-dialog-form input {
+  background: #1d1d20;
+  border-color: #3a3a3f;
+  color: rgb(255 255 255 / 92%);
+}
+
+html[data-theme="dark"] .account-dialog-form input:focus {
+  border-color: #4187ff;
+  background: #1d1d20;
+}
+
+html[data-theme="dark"] .account-dialog-close {
+  color: rgb(255 255 255 / 45%);
+}
+
+html[data-theme="dark"] .account-dialog-close:hover {
+  background: rgb(255 255 255 / 8%);
+  color: rgb(255 255 255 / 85%);
+}

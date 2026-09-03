@@ -10,6 +10,7 @@ import {workspaceMenu} from "../menus/workspace";
 import {MenuItem} from "../menus/Menu";
 import {setMode} from "../util/assets";
 import {openSetting} from "../config";
+import {openAccountDialog} from "../dialog/accountDialog";
 import {openSearch} from "../search/spread";
 import type {App} from "../index";
 /// #if !BROWSER
@@ -168,7 +169,8 @@ export const initBar = (app: App) => {
                 if (window.siyuan.user) {
                     syncGuide(app);
                 } else {
-                    openSetting(app, "sync");
+                    // 未登录用户：直接弹出独立的登录/注册对话框，不再跳进设置页
+                    openAccountDialog();
                 }
                 event.stopPropagation();
                 break;
