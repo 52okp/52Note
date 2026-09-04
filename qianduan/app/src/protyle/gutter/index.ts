@@ -11,7 +11,7 @@ import {getIconByType} from "../../editor/getIcon";
 import {enterBack, iframeMenu, tableMenu, videoMenu, zoomOut} from "../../menus/protyle";
 import {foldBlocksRecursively, foldHeadingGroup, setFold} from "../util/blockFold";
 import {MenuItem} from "../../menus/Menu";
-import {copySubMenu, openAttr, openFileAttr, openWechatNotify} from "../../menus/commonMenuItem";
+import {copySubMenu, openAttr, openFileAttr} from "../../menus/commonMenuItem";
 import {
     copyPlainText,
     isMac,
@@ -2727,20 +2727,6 @@ export class Gutter {
         }
         if (type !== "NodeThematicBreak" || !protyle.disabled) {
             window.siyuan.menus.menu.append(new MenuItem({id: "separator_4", type: "separator"}).element);
-        }
-        if (window.siyuan.config.cloudRegion === 0 &&
-            !["NodeThematicBreak", "NodeBlockQueryEmbed", "NodeIFrame", "NodeHTMLBlock", "NodeWidget", "NodeVideo", "NodeAudio"].includes(type) &&
-            getContenteditableElement(nodeElement)?.textContent.trim() !== "" &&
-            (type !== "NodeCodeBlock" || (type === "NodeCodeBlock" && !nodeElement.getAttribute("data-subtype")))) {
-            window.siyuan.menus.menu.append(new MenuItem({
-                id: "wechatReminder",
-                icon: "iconMp",
-                label: window.siyuan.languages.wechatReminder,
-                ignore: window.siyuan.config.readonly,
-                click() {
-                    openWechatNotify(nodeElement);
-                }
-            }).element);
         }
         if (type !== "NodeThematicBreak" && !window.siyuan.config.readonly && !isEncryptedBox(protyle.notebookId)) {
             const isCardMade = nodeElement.hasAttribute(Constants.CUSTOM_RIFF_DECKS);

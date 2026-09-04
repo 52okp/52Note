@@ -6,7 +6,6 @@ import {isLocalPath, pathPosix} from "../../util/pathName";
 import {processSiYuanUri} from "../../util/uri";
 import {previewDocImage} from "./image";
 import {getDiagramBlock, previewDiagram} from "./diagram";
-import {needSubscribe} from "../../util/needSubscribe";
 import {Constants} from "../../constants";
 import {getSearch, isMobile} from "../../util/functions";
 /// #if !BROWSER
@@ -289,27 +288,10 @@ export class Preview {
         }, protyle.options.preview.delay);
     }
 
-    private link2online(copyElement: HTMLElement) {
-        if (needSubscribe("")) {
-            return;
-        }
-        copyElement.querySelectorAll("[href],[src]").forEach(item => {
-            const oldLink = item.getAttribute("href") || item.getAttribute("src");
-            if (oldLink && oldLink.startsWith("assets/")) {
-                const newLink = Constants.ASSETS_ADDRESS + window.siyuan.user.userId + "/" + oldLink;
-                if (item.getAttribute("href")) {
-                    item.setAttribute("href", newLink);
-                } else {
-                    item.setAttribute("src", newLink);
-                }
-            }
-        });
-    }
 
     private async copyToX(copyElement: HTMLElement, protyle: IProtyle, type?: string) {
         // fix math render
         if (type === "mp-wechat") {
-            this.link2online(copyElement);
             copyElement.querySelectorAll(".katex-html .base").forEach((item: HTMLElement) => {
                 item.style.display = "initial";
             });
@@ -332,7 +314,6 @@ export class Preview {
             });
             prepareWechatCopy(copyElement, this.previewElement);
         } else if (type === "zhihu") {
-            this.link2online(copyElement);
             copyElement.querySelectorAll('[data-subtype="math"]').forEach((item: HTMLElement) => {
                 // https://github.com/siyuan-note/siyuan/issues/10015
                 item.outerHTML = `<img class="Formula-image" data-eeimg="true" src="//www.zhihu.com/equation?tex=" alt="${item.getAttribute("data-content")}" style="${item.tagName === "DIV" ? "display: block; max-width: 100%;" : ""}margin: 0 auto;">`;

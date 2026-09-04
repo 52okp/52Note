@@ -274,12 +274,8 @@ func store52NoteUser(user noteAccountUser, tokens noteAccountTokens) error {
 		UserToken:           tokens.AccessToken,
 		UserRefreshToken:    tokens.RefreshToken,
 		UserTokenExpireTime: strconv.FormatInt(tokens.ExpiresAt.Unix(), 10),
-		// 复用当前内核对官方同步提供商的功能开关。52Note 的订阅和配额由自有后端管理，
-		// 不读取思源官方账号的订阅字段。
-		UserSiYuanProExpireTime:      -1,
-		UserSiYuanSubscriptionStatus: 0,
-		UserTitles:                   []*conf.UserTitle{},
-		Is52NoteUser:                 true,
+		UserTitles:          []*conf.UserTitle{},
+		Is52NoteUser:        true,
 	}
 
 	data, _ := gulu.JSON.MarshalJSON(current)

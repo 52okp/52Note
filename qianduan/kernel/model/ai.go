@@ -44,7 +44,7 @@ func ChatGPT(msg string) (ret string) {
 		return
 	}
 
-	return chatGPT(msg, false)
+	return chatGPT(msg)
 }
 
 func ChatGPTWithAction(ids []string, action string) (ret string) {
@@ -59,20 +59,20 @@ func ChatGPTWithAction(ids []string, action string) (ret string) {
 	}
 
 	msg := getBlocksContent(ids)
-	ret = chatGPTWithAction(msg, action, false)
+	ret = chatGPTWithAction(msg, action)
 	return
 }
 
 var cachedContextMsg []string
 
-func chatGPT(msg string, cloud bool) (ret string) {
+func chatGPT(msg string) (ret string) {
 	if "Clear context" == msg {
 		// AI clear context action https://github.com/siyuan-note/siyuan/issues/10255
 		cachedContextMsg = nil
 		return
 	}
 
-	ret, retCtxMsgs, err := chatGPTComplete(msg, cachedContextMsg, cloud)
+	ret, retCtxMsgs, err := chatGPTComplete(msg, cachedContextMsg)
 	if err != nil {
 		return
 	}
@@ -80,9 +80,9 @@ func chatGPT(msg string, cloud bool) (ret string) {
 	return
 }
 
-func chatGPTWithAction(msg string, action string, cloud bool) (ret string) {
+func chatGPTWithAction(msg string, action string) (ret string) {
 	msg = BuildAIEditorPrompt(msg, action)
-	ret, _, err := chatGPTComplete(msg, nil, cloud)
+	ret, _, err := chatGPTComplete(msg, nil)
 	if err != nil {
 		return
 	}
@@ -234,7 +234,7 @@ func IsAIEditorStreamDone(err error) bool {
 	return errors.Is(err, io.EOF)
 }
 
-func chatGPTComplete(msg string, contextMsgs []string, cloud bool) (ret string, retContextMsgs []string, err error) {
+func chatGPTComplete(msg string, contextMsgs []string) (ret string, retContextMsgs []string, err error) {
 	util.PushEndlessProgress("Requesting...")
 	defer util.ClearPushProgress(100)
 
@@ -254,18 +254,13 @@ func chatGPTComplete(msg string, contextMsgs []string, cloud bool) (ret string, 
 		contextMsgs = contextMsgs[len(contextMsgs)-editing.MaxHistoryMessages:]
 	}
 
-	var gpt GPT
-	if cloud {
-		gpt = &CloudGPT{}
-	} else {
-		gpt = &OpenAIGPT{
-			c:                   util.NewOpenAIClientWithModel(prov.APIKey, prov.BaseURL, m.Name),
-			m:                   m,
-			protocol:            prov.Protocol,
-			timeout:             prov.RequestTimeout,
-			maxCompletionTokens: editing.MaxCompletionTokens,
-			temperature:         editing.Temperature,
-		}
+	gpt := &OpenAIGPT{
+		c:                   util.NewOpenAIClientWithModel(prov.APIKey, prov.BaseURL, m.Name),
+		m:                   m,
+		protocol:            prov.Protocol,
+		timeout:             prov.RequestTimeout,
+		maxCompletionTokens: editing.MaxCompletionTokens,
+		temperature:         editing.Temperature,
 	}
 
 	part, stop, chatErr := gpt.chat(msg, contextMsgs)
@@ -337,10 +332,6 @@ func getBlocksContent(ids []string) string {
 	return buf.String()
 }
 
-type GPT interface {
-	chat(msg string, contextMsgs []string) (partRet string, stop bool, err error)
-}
-
 type OpenAIGPT struct {
 	c                   *openai.Client
 	m                   *conf.Model
@@ -353,11 +344,4 @@ type OpenAIGPT struct {
 func (gpt *OpenAIGPT) chat(msg string, contextMsgs []string) (partRet string, stop bool, err error) {
 	return util.ChatGPT(msg, contextMsgs, gpt.c, gpt.protocol, gpt.m.Name, gpt.maxCompletionTokens, gpt.temperature,
 		gpt.timeout)
-}
-
-type CloudGPT struct {
-}
-
-func (gpt *CloudGPT) chat(msg string, contextMsgs []string) (partRet string, stop bool, err error) {
-	return CloudChatGPT(msg, contextMsgs)
 }

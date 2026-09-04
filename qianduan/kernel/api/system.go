@@ -749,7 +749,7 @@ func getConf(c *gin.Context) {
 		return
 	}
 
-	if !maskedConf.Sync.Enabled || (0 == maskedConf.Sync.Provider && !model.IsSubscriber()) {
+	if !maskedConf.Sync.Enabled || 0 == maskedConf.Sync.Provider {
 		maskedConf.Sync.Stat = model.Conf.Language(53)
 	}
 

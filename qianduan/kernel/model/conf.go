@@ -21,6 +21,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
+	locale "github.com/Xuanwo/go-locale"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -34,7 +35,7 @@ import (
 	"github.com/88250/gulu"
 	"github.com/88250/lute"
 	"github.com/88250/lute/ast"
-	"github.com/Xuanwo/go-locale"
+
 	"github.com/siyuan-note/filelock"
 	"github.com/siyuan-note/logging"
 	"github.com/siyuan-note/siyuan/kernel/conf"
@@ -1023,7 +1024,7 @@ func Close(force, setCurrentWorkspace bool, execInstallPkg int) (exitCode int, i
 		}
 
 		if Conf.Sync.Enabled && 3 != Conf.Sync.Mode &&
-			((IsSubscriber() && conf.ProviderSiYuan == Conf.Sync.Provider) || conf.ProviderSiYuan != Conf.Sync.Provider) {
+			conf.ProviderSiYuan != Conf.Sync.Provider {
 			syncData(true, false)
 			if 0 != ExitSyncSucc {
 				exitCode = 1
@@ -1300,7 +1301,7 @@ func (conf *AppConf) GetClosedBoxes() (ret []*Box) {
 
 func (conf *AppConf) Language(num int) (ret string) {
 	ret = conf.language(num)
-	ret = strings.ReplaceAll(ret, "${accountServer}", util.GetCloudAccountServer())
+	ret = strings.ReplaceAll(ret, "${accountServer}", noteAccountServer)
 	return
 }
 
@@ -1328,23 +1329,6 @@ func InitBoxes() {
 	}
 
 	logging.LogInfof("tree/block count [%d/%d]", treenode.CountTrees(), blockCount)
-}
-
-func IsSubscriber() bool {
-	u := Conf.GetUser()
-	return nil != u && (-1 == u.UserSiYuanProExpireTime || 0 < u.UserSiYuanProExpireTime) && 0 == u.UserSiYuanSubscriptionStatus
-}
-
-func IsPaidUser() bool {
-	if IsSubscriber() {
-		return true
-	}
-
-	u := Conf.GetUser()
-	if nil == u {
-		return false
-	}
-	return 1 == u.UserSiYuanOneTimePayStatus
 }
 
 const (

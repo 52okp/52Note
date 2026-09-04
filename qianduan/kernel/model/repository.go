@@ -1426,19 +1426,6 @@ func DownloadCloudSnapshot(tag, id string) (err error) {
 		return
 	}
 
-	switch Conf.Sync.Provider {
-	case conf.ProviderSiYuan:
-		if !IsSubscriber() {
-			util.PushErrMsg(Conf.Language(29), 5000)
-			return
-		}
-	case conf.ProviderWebDAV, conf.ProviderS3, conf.ProviderLocal:
-		if !IsPaidUser() {
-			util.PushErrMsg(Conf.Language(214), 5000)
-			return
-		}
-	}
-
 	defer util.PushClearProgress()
 
 	var downloadFileCount, downloadChunkCount int
@@ -1466,19 +1453,6 @@ func UploadCloudSnapshot(tag, id string) (err error) {
 	repo, err := newRepository()
 	if err != nil {
 		return
-	}
-
-	switch Conf.Sync.Provider {
-	case conf.ProviderSiYuan:
-		if !IsSubscriber() {
-			util.PushErrMsg(Conf.Language(29), 5000)
-			return
-		}
-	case conf.ProviderWebDAV, conf.ProviderS3, conf.ProviderLocal:
-		if !IsPaidUser() {
-			util.PushErrMsg(Conf.Language(214), 5000)
-			return
-		}
 	}
 
 	util.PushEndlessProgress(Conf.Language(116))
@@ -1509,19 +1483,6 @@ func RemoveCloudRepoTag(tag string) (err error) {
 		return
 	}
 
-	switch Conf.Sync.Provider {
-	case conf.ProviderSiYuan:
-		if !IsSubscriber() {
-			util.PushErrMsg(Conf.Language(29), 5000)
-			return
-		}
-	case conf.ProviderWebDAV, conf.ProviderS3, conf.ProviderLocal:
-		if !IsPaidUser() {
-			util.PushErrMsg(Conf.Language(214), 5000)
-			return
-		}
-	}
-
 	err = repo.RemoveCloudRepoTag(tag)
 	if err != nil {
 		return
@@ -1539,19 +1500,6 @@ func GetCloudRepoTagSnapshots() (ret []*dejavu.Log, err error) {
 	repo, err := newRepository()
 	if err != nil {
 		return
-	}
-
-	switch Conf.Sync.Provider {
-	case conf.ProviderSiYuan:
-		if !IsSubscriber() {
-			util.PushErrMsg(Conf.Language(29), 5000)
-			return
-		}
-	case conf.ProviderWebDAV, conf.ProviderS3, conf.ProviderLocal:
-		if !IsPaidUser() {
-			util.PushErrMsg(Conf.Language(214), 5000)
-			return
-		}
 	}
 
 	logs, err := repo.GetCloudRepoTagLogs(map[string]any{eventbus.CtxPushMsg: eventbus.CtxPushMsgToStatusBar})
@@ -1575,19 +1523,6 @@ func GetCloudRepoSnapshots(page int) (ret []*dejavu.Log, pageCount, totalCount i
 	repo, err := newRepository()
 	if err != nil {
 		return
-	}
-
-	switch Conf.Sync.Provider {
-	case conf.ProviderSiYuan:
-		if !IsSubscriber() {
-			util.PushErrMsg(Conf.Language(29), 5000)
-			return
-		}
-	case conf.ProviderWebDAV, conf.ProviderS3, conf.ProviderLocal:
-		if !IsPaidUser() {
-			util.PushErrMsg(Conf.Language(214), 5000)
-			return
-		}
 	}
 
 	if 1 > page {
@@ -1813,13 +1748,6 @@ func syncRepoDownload() (err error) {
 
 		logging.LogErrorf("sync data repo download failed: %s", err)
 		msg := fmt.Sprintf(Conf.Language(80), formatRepoErrorMsg(err))
-		if errors.Is(err, dejavu.ErrCloudStorageSizeExceeded) {
-			u := Conf.GetUser()
-			msg = fmt.Sprintf(Conf.Language(43), humanize.BytesCustomCeil(uint64(u.UserSiYuanRepoSize), 2))
-			if 2 == u.UserSiYuanSubscriptionPlan {
-				msg = fmt.Sprintf(Conf.Language(68), humanize.BytesCustomCeil(uint64(u.UserSiYuanRepoSize), 2))
-			}
-		}
 		Conf.Sync.Stat = msg
 		Conf.Save()
 		pushSyncStatusBar(msg)
@@ -1893,13 +1821,6 @@ func syncRepoUpload() (err error) {
 
 		logging.LogErrorf("sync data repo upload failed: %s", err)
 		msg := fmt.Sprintf(Conf.Language(80), formatRepoErrorMsg(err))
-		if errors.Is(err, dejavu.ErrCloudStorageSizeExceeded) {
-			u := Conf.GetUser()
-			msg = fmt.Sprintf(Conf.Language(43), humanize.BytesCustomCeil(uint64(u.UserSiYuanRepoSize), 2))
-			if 2 == u.UserSiYuanSubscriptionPlan {
-				msg = fmt.Sprintf(Conf.Language(68), humanize.BytesCustomCeil(uint64(u.UserSiYuanRepoSize), 2))
-			}
-		}
 		Conf.Sync.Stat = msg
 		Conf.Save()
 		pushSyncStatusBar(msg)
@@ -1997,13 +1918,6 @@ func bootSyncRepo() (err error) {
 
 		logging.LogErrorf("sync data repo failed: %s", err)
 		msg := fmt.Sprintf(Conf.Language(80), formatRepoErrorMsg(err))
-		if errors.Is(err, dejavu.ErrCloudStorageSizeExceeded) {
-			u := Conf.GetUser()
-			msg = fmt.Sprintf(Conf.Language(43), humanize.BytesCustomCeil(uint64(u.UserSiYuanRepoSize), 2))
-			if 2 == u.UserSiYuanSubscriptionPlan {
-				msg = fmt.Sprintf(Conf.Language(68), humanize.BytesCustomCeil(uint64(u.UserSiYuanRepoSize), 2))
-			}
-		}
 		Conf.Sync.Stat = msg
 		Conf.Save()
 		pushSyncStatusBar(msg)
@@ -2123,13 +2037,6 @@ func syncIndexedRepo(repo *dejavu.Repo, exit, byHand bool, beforeIndex, afterInd
 
 		logging.LogErrorf("sync data repo failed: %s", err)
 		msg := fmt.Sprintf(Conf.Language(80), formatRepoErrorMsg(err))
-		if errors.Is(err, dejavu.ErrCloudStorageSizeExceeded) {
-			u := Conf.GetUser()
-			msg = fmt.Sprintf(Conf.Language(43), humanize.BytesCustomCeil(uint64(u.UserSiYuanRepoSize), 2))
-			if 2 == u.UserSiYuanSubscriptionPlan {
-				msg = fmt.Sprintf(Conf.Language(68), humanize.BytesCustomCeil(uint64(u.UserSiYuanRepoSize), 2))
-			}
-		}
 		Conf.Sync.Stat = msg
 		Conf.Save()
 		pushSyncStatusBar(msg)
@@ -2958,7 +2865,6 @@ func buildCloudConf() (ret *cloud.Conf, err error) {
 		UserID:        userId,
 		Token:         token,
 		AvailableSize: availableSize,
-		Server:        util.GetCloudServer(),
 	}
 
 	switch Conf.Sync.Provider {
@@ -3036,8 +2942,6 @@ func GetCloudSpace() (s *Sync, b *Backup, hSize, hAssetSize, hTotalSize, hExchan
 		Updated: backupUpdated,
 	}
 
-	assetSize := stat.AssetSize
-	totalSize := syncSize + backupSize + assetSize
 	hAssetSize = "-"
 	hSize = "-"
 	hTotalSize = "-"
@@ -3046,20 +2950,6 @@ func GetCloudSpace() (s *Sync, b *Backup, hSize, hAssetSize, hTotalSize, hExchan
 	hTrafficDownloadSize = "-"
 	hTrafficAPIGet = "-"
 	hTrafficAPIPut = "-"
-	if conf.ProviderSiYuan == Conf.Sync.Provider {
-		s.HSize = humanize.BytesCustomCeil(uint64(syncSize), 2)
-		b.HSize = humanize.BytesCustomCeil(uint64(backupSize), 2)
-		hAssetSize = humanize.BytesCustomCeil(uint64(assetSize), 2)
-		hSize = humanize.BytesCustomCeil(uint64(totalSize), 2)
-		if u := Conf.GetUser(); nil != u {
-			hTotalSize = humanize.BytesCustomCeil(uint64(u.UserSiYuanRepoSize), 2)
-			hExchangeSize = humanize.BytesCustomCeil(uint64(u.UserSiYuanPointExchangeRepoSize), 2)
-			hTrafficUploadSize = humanize.BytesCustomCeil(uint64(u.UserTrafficUpload), 2)
-			hTrafficDownloadSize = humanize.BytesCustomCeil(uint64(u.UserTrafficDownload), 2)
-			hTrafficAPIGet = humanize.SIWithDigits(u.UserTrafficAPIGet, 2, "")
-			hTrafficAPIPut = humanize.SIWithDigits(u.UserTrafficAPIPut, 2, "")
-		}
-	}
 	return
 }
 

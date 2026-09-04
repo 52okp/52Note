@@ -14,7 +14,6 @@ import {Dialog} from "./index";
 import {isMobile} from "../util/functions";
 import {confirmDialog} from "./confirmDialog";
 import {escapeHtml} from "../util/escape";
-import {needSubscribe} from "../util/needSubscribe";
 import {hideAllElements} from "../protyle/ui/hideElements";
 import type {App} from "../index";
 import {saveScroll} from "../protyle/scroll/saveScroll";
@@ -461,7 +460,7 @@ export const processSync = (data?: IWebSocketData, plugins?: Plugin[]) => {
     if (data?.code === 1) {
         window.dispatchEvent(new CustomEvent("siyuan-sync-success"));
     }
-    const syncDisabled = !window.siyuan.config.sync.enabled || (0 === window.siyuan.config.sync.provider && needSubscribe(""));
+    const syncDisabled = !window.siyuan.config.sync.enabled || window.siyuan.config.sync.provider === 0;
     /// #if MOBILE
     const menuSyncUseElement = document.querySelector("#menuSyncNow use");
     const barSyncUseElement = document.querySelector("#toolbarSync use");

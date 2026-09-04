@@ -1,4 +1,5 @@
 import {Layout} from "./index";
+import {removeRetiredDockEntries} from "./dock/retired";
 import {Wnd} from "./Wnd";
 import {Tab} from "./Tab";
 import type {Model} from "./Model";
@@ -305,10 +306,12 @@ const ensureAgentChatDock = (layout: Pick<Config.IUiLayout, "left" | "right" | "
 };
 
 const initInternalDock = (dockItem: Config.IUILayoutDockTab[]) => {
-    dockItem.forEach((existSubItem, index) => {
-        if (window.siyuan.isPublish && (existSubItem.type === "inbox" || existSubItem.type === "agentChat")) {
+    removeRetiredDockEntries(dockItem);
+    for (let index = dockItem.length - 1; index >= 0; index--) {
+        const existSubItem = dockItem[index];
+        if (window.siyuan.isPublish && existSubItem.type === "agentChat") {
             dockItem.splice(index, 1);
-            return;
+            continue;
         }
         if (existSubItem.type === "agentChat") {
             existSubItem.icon = "iconBot";
@@ -316,7 +319,7 @@ const initInternalDock = (dockItem: Config.IUILayoutDockTab[]) => {
         if (existSubItem.hotkeyLangId) {
             existSubItem.title = window.siyuan.languages[existSubItem.hotkeyLangId];
         }
-    });
+    }
 };
 
 const JSONToDock = (json: any, app: App) => {

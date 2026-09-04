@@ -290,6 +290,26 @@ html[data-theme="dark"] .account-dialog-close:hover {
   transition: background-color 0.15s, border-color 0.15s;
 }
 
+.account-dialog-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: 100%;
+  margin-top: 6px;
+}
+
+.account-dialog-account-actions > button {
+  box-sizing: border-box;
+  width: auto;
+  min-width: 120px;
+  min-height: 40px;
+  margin-top: 0;
+  padding: 10px 20px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
 .account-dialog-logout:disabled {
   opacity: 0.5;
   cursor: not-allowed;

@@ -18,7 +18,6 @@ export abstract class Constants {
     public static readonly SIYUAN_APPID: string = Math.random().toString(36).substring(8);
 
     // 服务器地址
-    public static readonly ASSETS_ADDRESS: string = "https://assets.b3logfile.com/siyuan/";
     public static readonly PROTYLE_CDN: string = "/stage/protyle";
     public static readonly UPLOAD_ADDRESS: string = "/upload";
     public static readonly SERVICE_WORKER_PATH: string = "/service-worker.js";
@@ -63,7 +62,6 @@ export abstract class Constants {
     public static readonly SIYUAN_SHOW_WINDOW: string = "siyuan-show-window";
 
     // custom
-    public static readonly CUSTOM_REMINDER_WECHAT: string = "custom-reminder-wechat";
     public static readonly CUSTOM_RIFF_DECKS: string = "custom-riff-decks";
     public static readonly CUSTOM_SY_READONLY: string = "custom-sy-readonly";
     public static readonly CUSTOM_SY_FULLWIDTH: string = "custom-sy-fullwidth";
@@ -480,7 +478,6 @@ export abstract class Constants {
             bookmark: {default: "⌃3", custom: "⌃3"},
             tag: {default: "⌃4", custom: "⌃4"},
             dailyNote: {default: "⌃5", custom: "⌃5"},
-            inbox: {default: "⌃6", custom: "⌃6"},
             backlinks: {default: "⌃7", custom: "⌃7"},
             graphView: {default: "⌃8", custom: "⌃8"},
             globalGraph: {default: "⌃9", custom: "⌃9"},
@@ -738,12 +735,6 @@ export abstract class Constants {
                     show: false,
                     icon: "iconOutline",
                     hotkeyLangId: "outline",
-                }, {
-                    type: "inbox",
-                    size: {width: 320, height: 0},
-                    show: false,
-                    icon: "iconInbox",
-                    hotkeyLangId: "inbox",
                 }], [{
                     type: "bookmark",
                     size: {width: 232, height: 0},

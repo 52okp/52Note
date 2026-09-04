@@ -18,7 +18,6 @@ import {MobileBookmarks} from "../dock/MobileBookmarks";
 import {MobileTags} from "../dock/MobileTags";
 import {activeBlur, initKeyboardToolbar} from "./keyboardToolbar";
 import {syncGuide} from "../../sync/syncGuide";
-import {Inbox} from "../../layout/dock/Inbox";
 import type {App} from "../../index";
 import {checkFold} from "../../util/noRelyPCFunction";
 import {MobileCustom} from "../dock/MobileCustom";
@@ -125,8 +124,6 @@ export const initFramework = async (app: App, isStart: boolean) => {
                     } else {
                         window.siyuan.mobile.docks.tag.update();
                     }
-                } else if (type === "sidebar-inbox-tab" && !window.siyuan.mobile.docks.inbox) {
-                    window.siyuan.mobile.docks.inbox = new Inbox(app, document.querySelector('#sidebar [data-type="sidebar-inbox"]'));
                 } else if (type === "sidebar-plugin-tab") {
                     if (!custom) {
                         tabPanelElement.innerHTML = `<div class="b3-list--empty">${window.siyuan.languages.emptyContent}</div>`;

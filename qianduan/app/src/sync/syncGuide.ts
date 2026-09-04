@@ -1,4 +1,3 @@
-import {isPaidUser, needSubscribe} from "../util/needSubscribe";
 import {showMessage} from "../dialog/message";
 import {fetchPost} from "../util/fetch";
 import {Dialog} from "../dialog";
@@ -10,7 +9,6 @@ import {openSetting} from "../config";
 /// #endif
 import type {App} from "../index";
 import {Constants} from "../constants";
-import {getCloudURL} from "../config/util/about";
 
 const openSyncSetting = (app?: App) => {
     if (!app) {
@@ -167,16 +165,11 @@ export const syncGuide = (app?: App) => {
     if (app && document.querySelector("#barSync")?.classList.contains("toolbar__item--active")) {
         return;
     }
-    if (window.siyuan.config.sync.provider === 0 && needSubscribe()) {
+    if (window.siyuan.config.sync.provider === 0) {
         openSyncSetting(app);
-        showMessage(window.siyuan.languages._kernel[29].replaceAll("${accountServer}", getCloudURL("")));
-        return;
-    } else if (!isPaidUser()) {
-        openSyncSetting(app);
-        showMessage(window.siyuan.languages._kernel[214].replaceAll("${accountServer}", getCloudURL("")));
         return;
     }
-    if (!window.siyuan.config.sync.enabled && window.siyuan.config.sync.provider !== 0) {
+    if (!window.siyuan.config.sync.enabled) {
         openSyncSetting(app);
         return;
     }

@@ -19,12 +19,12 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	humanize "github.com/88250/go-humanize"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/88250/go-humanize"
 	"github.com/88250/gulu"
 	"github.com/djherbis/times"
 	"github.com/gin-gonic/gin"
@@ -525,71 +525,6 @@ func resolveAssetPath(c *gin.Context) {
 	}
 	ret.Data = p
 	return
-}
-
-func uploadCloud(c *gin.Context) {
-	ret := gulu.Ret.NewResult()
-	defer c.JSON(http.StatusOK, ret)
-
-	arg, ok := util.JsonArg(c, ret)
-	if !ok {
-		return
-	}
-
-	ignorePushMsg := false
-	if nil != arg["ignorePushMsg"] {
-		ignorePushMsg = arg["ignorePushMsg"].(bool)
-	}
-
-	id := arg["id"].(string)
-	count, err := model.UploadAssets2Cloud(id, ignorePushMsg)
-	if err != nil {
-		ret.Code = -1
-		ret.Msg = err.Error()
-		ret.Data = map[string]any{"closeTimeout": 3000}
-		return
-	}
-
-	util.PushMsg(fmt.Sprintf(model.Conf.Language(41), count), 3000)
-}
-
-func uploadCloudByAssetsPaths(c *gin.Context) {
-	ret := gulu.Ret.NewResult()
-	defer c.JSON(http.StatusOK, ret)
-
-	arg, ok := util.JsonArg(c, ret)
-	if !ok {
-		return
-	}
-
-	if nil == arg["paths"] {
-		ret.Code = -1
-		ret.Msg = "[paths] is required"
-		return
-	}
-
-	pathsArg := arg["paths"].([]any)
-	var assets []string
-	for _, pathArg := range pathsArg {
-		assets = append(assets, pathArg.(string))
-	}
-
-	ignorePushMsg := false
-	if nil != arg["ignorePushMsg"] {
-		ignorePushMsg = arg["ignorePushMsg"].(bool)
-	}
-
-	count, err := model.UploadAssets2CloudByAssetsPaths(assets, ignorePushMsg)
-	if err != nil {
-		ret.Code = -1
-		ret.Msg = err.Error()
-		ret.Data = map[string]any{"closeTimeout": 3000}
-		return
-	}
-
-	if !ignorePushMsg {
-		util.PushMsg(fmt.Sprintf(model.Conf.Language(41), count), 3000)
-	}
 }
 
 func insertLocalAssets(c *gin.Context) {

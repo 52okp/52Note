@@ -2,6 +2,15 @@ import * as assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import test from "node:test";
+
+test("retired cloud features are absent from configurable menus", () => {
+    const retired = new Set(["inbox", "wechatReminder", "uploadAssets2CDN", "share2Liandi"]);
+    for (const path of getEntryPaths()) {
+        assert.equal(retired.has(getEntryCatalogNode(path)?.key ?? ""), false, path);
+    }
+    assert.ok(getEntryCatalogNode("dock.agentChat"));
+    assert.ok(getEntryCatalogNode("dock.file"));
+});
 import {
     entryCatalog,
     getEntryCatalogChildren,
@@ -633,7 +642,6 @@ test("simple profile follows the reviewed defaults", () => {
         "gutter.single.addToDatabase",
         "gutter.single.enterBack",
         "gutter.single.jumpTo",
-        "gutter.single.wechatReminder",
         "document.more.netAssets2LocalAssets",
         "document.more.fullWidth",
         "docTree.notebook.sort.fileNameASC",

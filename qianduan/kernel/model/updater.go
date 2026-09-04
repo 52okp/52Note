@@ -17,10 +17,10 @@
 package model
 
 import (
-	"context"
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	req "github.com/imroc/req/v3"
 	"io"
 	"os"
 	"path"
@@ -30,7 +30,7 @@ import (
 	"time"
 
 	"github.com/88250/gulu"
-	"github.com/imroc/req/v3"
+
 	"github.com/siyuan-note/logging"
 	"github.com/siyuan-note/siyuan/kernel/util"
 	"golang.org/x/mod/semver"
@@ -196,37 +196,6 @@ func sha256Hash(filename string) (ret string, err error) {
 		return "", err
 	}
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
-}
-
-type Announcement struct {
-	Id     string `json:"id"`
-	Title  string `json:"title"`
-	URL    string `json:"url"`
-	Region int    `json:"region"`
-}
-
-func getAnnouncements() (ret []*Announcement) {
-	result, err := util.GetRhyResult(context.TODO(), false)
-	if err != nil {
-		logging.LogErrorf("get announcement failed: %s", err)
-		return
-	}
-
-	if nil == result["announcement"] {
-		return
-	}
-
-	announcements := result["announcement"].([]any)
-	for _, announcement := range announcements {
-		ann := announcement.(map[string]any)
-		ret = append(ret, &Announcement{
-			Id:     ann["id"].(string),
-			Title:  ann["title"].(string),
-			URL:    ann["url"].(string),
-			Region: int(ann["region"].(float64)),
-		})
-	}
-	return
 }
 
 func CheckUpdate(showMsg bool) {

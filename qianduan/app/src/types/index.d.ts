@@ -100,7 +100,7 @@ type TEventBus = "ws-main" | "sync-start" | "sync-end" | "sync-fail" |
     "click-blockicon" | "click-editorcontent" | "click-pdf" | "click-editortitleicon" | "click-flashcard-action" |
     "open-noneditableblock" |
     "open-menu-blockref" | "open-menu-fileannotationref" | "open-menu-tag" | "open-menu-link" | "open-menu-image" |
-    "open-menu-av" | "open-menu-content" | "open-menu-breadcrumbmore" | "open-menu-doctree" | "open-menu-inbox" |
+    "open-menu-av" | "open-menu-content" | "open-menu-breadcrumbmore" | "open-menu-doctree" |
     "open-siyuan-url-plugin" | "open-siyuan-url-block" | "opened-notebook" |
     "closed-notebook" |
     "paste" |
@@ -366,7 +366,6 @@ interface Window {
 
     showKeyboardToolbar(): void;
 
-    processIOSPurchaseResponse(code: number): void;
 
     hideKeyboardToolbar(): void;
 
@@ -608,7 +607,6 @@ interface ISiyuan {
             bookmark: import("../mobile/dock/MobileBookmarks").MobileBookmarks | null,
             tag: import("../mobile/dock/MobileTags").MobileTags | null,
             backlink: import("../mobile/dock/MobileBacklinks").MobileBacklinks | null,
-            inbox: import("../layout/dock/Inbox").Inbox | null,
         } & { [key: string]: import("../layout/Model").Model | any };
     },
     user?: {
@@ -622,27 +620,22 @@ interface ISiyuan {
          * 功能特性付费状态
          * 0 未付费，1 已付费
          */
-        userSiYuanOneTimePayStatus: number
         /**
          * 会员过期时间
          * -1 终身会员；0 未订阅或订阅已过期；>0 订阅到期时间（时间戳，毫秒）
          */
-        userSiYuanProExpireTime: number
         /**
          * 订阅计划类型
          * 0 年付订阅/终生；1 教育优惠；2 订阅试用
          */
-        userSiYuanSubscriptionPlan: number
         /**
          * 订阅类型
          * 0 年付；1 终生；2 月付
          */
-        userSiYuanSubscriptionType: number
         /**
          * 订阅状态
          * -1 未订阅，0 订阅可用，1 订阅封禁，2 订阅过期（包括付费订阅过期和试用订阅过期）
          */
-        userSiYuanSubscriptionStatus: number
         userToken: string
         userTitles: {
             name: string,
@@ -996,7 +989,6 @@ interface IModels {
     graph: import("../layout/dock/Graph").Graph[],
     outline: import("../layout/dock/Outline").Outline[]
     backlink: import("../layout/dock/Backlink").Backlink[]
-    inbox: import("../layout/dock/Inbox").Inbox[]
     files: import("../layout/dock/Files").Files[]
     bookmark: import("../layout/dock/Bookmark").Bookmark[]
     tag: import("../layout/dock/Tag").Tag[]

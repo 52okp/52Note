@@ -18,7 +18,6 @@ import {ipcRenderer, webFrame} from "electron";
 import {Constants} from "../constants";
 import {isBrowser, isWindow, setToolbarLeftMac} from "../util/functions";
 import {fetchPost} from "../util/fetch";
-import {needSubscribe} from "../util/needSubscribe";
 import * as dayjs from "dayjs";
 import {exportLayout, resizeTopBar} from "./util";
 import {setTabPosition} from "./tabUtil";
@@ -296,7 +295,7 @@ export const initBar = (app: App) => {
         event.preventDefault();
         fetchPost("/api/sync/getSyncInfo", {}, (response) => {
             let html = "";
-            if (!window.siyuan.config.sync.enabled || (0 === window.siyuan.config.sync.provider && needSubscribe(""))) {
+            if (!window.siyuan.config.sync.enabled || window.siyuan.config.sync.provider === 0) {
                 html = response.data.stat;
             } else {
                 html = window.siyuan.languages._kernel[82].replace("%s", dayjs(response.data.synced).format("YYYY-MM-DD HH:mm")) + "<br>";

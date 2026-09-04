@@ -1304,7 +1304,7 @@
 	"exportAsImage": "导出为图片",
 	"proFeature": "该特性需要付费（订阅会员不用再单独付费），<a href=\"https://b3log.org/siyuan/pricing.html\" target=\"_blank\">一次性付费后终身可用</a>",
 	"syncOfficialProviderIntro": "当前选择的是 52Note 官方提供的云端存储服务，仅支持付费订阅用户使用",
-	"syncThirdPartyProviderS3Intro": "当前选择的是 Amazon S3 协议兼容的第三方云端存储服务（比如<a href=\"https://s.qiniu.com/VbQfeu\" target=\"_blank\">七牛云</a>、<a href=\"https://www.aliyun.com/product/oss?userCode=yqovuas2\" target=\"_blank\">阿里云 OSS</a>、<a href=\"https://www.cloudflare.com/\" target=\"_blank\">Cloudflare R2</a>）",
+	"syncThirdPartyProviderS3Intro": "当前选择的是 Amazon S3 协议兼容的第三方云端存储服务（比如<a href=\"https://cloud.tencent.com/act/cps/redirect?redirect=10042&amp;cps_key=696a56b400da7a31d8e4bdefc0c05e88\" target=\"_blank\">腾讯云 COS</a>、<a href=\"https://www.qiniu.com/products/kodo?cps_key=1hkaajrndw9jm\" target=\"_blank\">七牛云</a>、<a href=\"https://www.aliyun.com/product/oss?source=5176.29345612&amp;userCode=jtx1a36l\" target=\"_blank\">阿里云 OSS</a>、<a href=\"https://www.cloudflare.com/\" target=\"_blank\">Cloudflare R2</a>）",
 	"syncThirdPartyProviderWebDAVIntro": "当前选择的是 WebDAV 协议的第三方云端存储服务。由于该协议性能较差且稳定性不足，建议优先选择 S3 服务",
 	"syncThirdPartyProviderLocalIntro": "当前选择的是本地文件系统提供的存储服务。请在 <code class='fn__code'>Endpoint</code> 字段中输入本地文件夹的完整路径",
 	"syncThirdPartyProviderTip": "在使用该特性前，请注意第三方云端存储服务的技术限制和计费项目等条款：<div class=\"b3-label__text\"><ul class='fn__list'><li>接口调用频率、带宽等技术限制</li><li>存储空间和流量等计费项目</li><li>使用条款和可用性保障等条款</li></ul></div><div class='fn__hr'></div>免责声明：详见思源笔记所使用的开源许可证 AGPLv3 中的相关条款",

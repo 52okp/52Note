@@ -11,7 +11,6 @@ import {Graph} from "./Graph";
 import {Model} from "../Model";
 import {adjustLayout, saveLayout, setPanelFocus} from "../util";
 import {getDockByType, resizeTabs, setTabPosition} from "../tabUtil";
-import {Inbox} from "./Inbox";
 import {Protyle} from "../../protyle";
 import {Backlink} from "./Backlink";
 import {AgentChat} from "./agent/AgentChat";
@@ -29,7 +28,7 @@ import {
 } from "./pluginDockState";
 import {getDockHotkey} from "./hotkey";
 
-const TYPES = ["file", "outline", "inbox", "bookmark", "tag", "graph", "globalGraph", "backlink", "agentChat"];
+const TYPES = ["file", "outline", "bookmark", "tag", "graph", "globalGraph", "backlink", "agentChat"];
 
 export class Dock {
     public elements: HTMLElement[];
@@ -624,13 +623,6 @@ export class Dock {
                                     blockId: editor?.protyle?.block?.rootID,
                                     notebookId: editor?.protyle?.notebookId,
                                 }));
-                            }
-                        });
-                        break;
-                    case "inbox":
-                        tab = new Tab({
-                            callback: (tab: Tab) => {
-                                tab.addModel(new Inbox(this.app, tab));
                             }
                         });
                         break;

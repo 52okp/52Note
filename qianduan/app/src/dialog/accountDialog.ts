@@ -147,8 +147,10 @@ const accountMarkup = () => {
     <div class="account-dialog-account-avatar">${displayName.slice(0, 1).toUpperCase() || "U"}</div>
     <div class="account-dialog-account-name">${displayName || "52Note 用户"}</div>
     <div class="account-dialog-account-email">${email}</div>
-    <button class="account-dialog-primary" data-action="sync-now">立即同步</button>
-    <button class="account-dialog-logout" data-action="logout">退出登录</button>
+    <div class="account-dialog-account-actions">
+      <button class="account-dialog-primary" data-action="sync-now">立即同步</button>
+      <button class="account-dialog-logout" data-action="logout">退出登录</button>
+    </div>
   </div>`;
 };
 

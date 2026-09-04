@@ -6,7 +6,6 @@ import {Constants} from "../constants";
 import {onGet} from "../protyle/util/onGet";
 import {hasClosestByAttribute, hasClosestByClassName} from "../protyle/util/hasClosest";
 import {hideElements} from "../protyle/ui/hideElements";
-import {isPaidUser, needSubscribe} from "../util/needSubscribe";
 import {fullscreen} from "../protyle/breadcrumb/action";
 import {MenuItem} from "../menus/Menu";
 import {escapeHtml} from "../util/escape";
@@ -752,8 +751,7 @@ export const bindCardEvent = async (options: {
             }, () => {
                 /// #if MOBILE
                 if (type !== "-3" &&
-                    ((0 !== window.siyuan.config.sync.provider && isPaidUser()) ||
-                        (0 === window.siyuan.config.sync.provider && !needSubscribe(""))) &&
+                    window.siyuan.config.sync.provider !== 0 &&
                     window.siyuan.config.repo.key && window.siyuan.config.sync.enabled) {
                     document.getElementById("toolbarSync").classList.remove("fn__none");
                 }

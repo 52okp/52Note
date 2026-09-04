@@ -9,7 +9,6 @@ import {RecordMedia, RecordMediaInputEndedError} from "../util/RecordMedia";
 import {hideMessage, showMessage} from "../../dialog/message";
 import {uploadFiles} from "../upload";
 import {hasClosestBlock, hasTopClosestByClassName} from "../util/hasClosest";
-import {needSubscribe} from "../../util/needSubscribe";
 import {isMobile} from "../../util/functions";
 import {zoomOut} from "../../menus/protyle";
 import {focusByRange, getEditorRange} from "../util/selection";
@@ -23,7 +22,6 @@ import {ipcRenderer} from "electron";
 import {onGet} from "../util/onGet";
 import {hasUnloadedDocumentBlocks} from "../util/documentRange";
 import {hideElements} from "../ui/hideElements";
-import {confirmDialog} from "../../dialog/confirmDialog";
 import {reloadProtyle} from "../util/reload";
 import {Menu} from "../../plugin/Menu";
 import {getNoContainerElement} from "../wysiwyg/getBlock";
@@ -34,7 +32,6 @@ import {isEncryptedBox} from "../../util/pathName";
 import {resize} from "../util/resize";
 import {listIndent, listOutdent} from "../wysiwyg/list";
 import {improveBreadcrumbAppearance} from "../wysiwyg/renderBacklink";
-import {getCloudURL} from "../../config/util/about";
 import {decodeHTML, escapeAttr, escapeAriaLabel, escapeHtml, escapeSearchHighlight} from "../../util/escape";
 import {refreshUndoButtons} from "../undo/globalUndo";
 import {getAllEditor} from "../../layout/getAll";
@@ -789,31 +786,6 @@ ${padHTML}
                         net2LocalAssets(protyle, "Assets");
                     }
                 }).element);
-                window.siyuan.menus.menu.append(new MenuItem({
-                    id: "uploadAssets2CDN",
-                    label: window.siyuan.languages.uploadAssets2CDN,
-                    icon: "iconUploadAssets",
-                    click() {
-                        if (!needSubscribe()) {
-                            confirmDialog("📦 " + window.siyuan.languages.uploadAssets2CDN, window.siyuan.languages.uploadAssets2CDNConfirmTip, () => {
-                                fetchPost("/api/asset/uploadCloud", {id: protyle.block.id});
-                            });
-                        }
-                    }
-                }).element);
-                if (window.siyuan.user) { // 登录链滴账号后即可使用 `分享到链滴` https://github.com/siyuan-note/siyuan/issues/7392
-                    window.siyuan.menus.menu.append(new MenuItem({
-                        id: "share2Liandi",
-                        label: window.siyuan.languages.share2Liandi,
-                        icon: "iconLiandi",
-                        click() {
-                            confirmDialog("🤩 " + window.siyuan.languages.share2Liandi,
-                                window.siyuan.languages.share2LiandiConfirmTip.replace("${accountServer}", getCloudURL("")), () => {
-                                    fetchPost("/api/export/export2Liandi", {id: protyle.block.parentID});
-                                });
-                        }
-                    }).element);
-                }
             }
             if (!protyle.scroll?.element.classList.contains("fn__none")) {
                 if (hasUnloadedDocumentBlocks(protyle.wysiwyg.element, true)) {

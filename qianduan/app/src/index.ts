@@ -39,7 +39,6 @@ import {hideAllElements} from "./protyle/ui/hideElements";
 import {loadPlugins, reloadPlugin} from "./plugin/loader";
 import "./assets/scss/base.scss";
 import {reloadEmoji} from "./emoji";
-import {processIOSPurchaseResponse} from "./util/iOSPurchase";
 /// #if !BROWSER
 import {ipcRenderer} from "electron";
 /// #endif
@@ -360,7 +359,6 @@ window.openFileByURL = (openURL) => {
 window.showKeyboardToolbar = () => {
     // 防止 Pad 端报错
 };
-window.processIOSPurchaseResponse = processIOSPurchaseResponse;
 // 移动端容器（Android/鸿蒙）启用桌面模式时，原生壳默认禁用 WebView 自身键盘行为、等待 JS 调用
 // showKeyboard 弹键盘，而桌面 bundle 不会调用它，导致键盘无法弹出。这里把键盘控制权交还给
 // WebView 自身管理（与平板走桌面 bundle 时的行为一致）

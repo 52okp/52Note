@@ -218,6 +218,9 @@ func validateBazaarPackageRatingRequest0(ctx context.Context, pkgType, packageNa
 	if nil == user || "" == user.UserToken {
 		return "", errors.New(Conf.Language(31))
 	}
+	if user.Is52NoteUser {
+		return "", errors.New("52Note accounts cannot authenticate to the upstream marketplace")
+	}
 
 	installedInfos, _, _, err := GetInstalledPackageInfos(pkgType)
 	if nil != err {
