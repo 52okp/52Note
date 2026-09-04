@@ -42,6 +42,9 @@ type User struct {
 	UserSiYuanSubscriptionStatus    float64      `json:"userSiYuanSubscriptionStatus"` // -1：未订阅，0：订阅可用，1：订阅封禁，2：订阅过期
 	UserSiYuanSubscriptionType      float64      `json:"userSiYuanSubscriptionType"`   // 0 年付订阅；1 终生订阅；2 月付订阅（目前不支持）
 	UserSiYuanOneTimePayStatus      float64      `json:"userSiYuanOneTimePayStatus"`   // 0 功能特性未付费；1 功能特性已付费
+	// Is52NoteUser 标记该登录态来自 52Note 自建账号体系（docs.52okp.com），
+	// 用于拦截所有仍指向思源官方云的调用，避免把 52Note 令牌发送给第三方。
+	Is52NoteUser bool `json:"is52NoteUser"`
 }
 
 type UserTitle struct {

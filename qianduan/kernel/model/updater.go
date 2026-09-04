@@ -240,6 +240,8 @@ func CheckUpdate(showMsg bool) {
 
 	release, err := getUpdateRelease(showMsg)
 	if err != nil {
+		util.PushErrMsg(Conf.Language(18), 5000)
+		logging.LogErrorf("check update failed: %s", err)
 		return
 	}
 

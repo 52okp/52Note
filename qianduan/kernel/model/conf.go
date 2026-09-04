@@ -618,6 +618,7 @@ func InitConf() {
 	if nil == Conf.Sync {
 		Conf.Sync = conf.NewSync()
 	}
+	Conf.Sync.NormalizeProvider()
 	if 0 == Conf.Sync.Mode {
 		Conf.Sync.Mode = 1
 	}
@@ -1147,8 +1148,13 @@ func enableLuteInlineSyntax(luteEngine *lute.Lute) {
 }
 
 func (conf *AppConf) Save() {
+	if err := conf.SaveChecked(); err != nil {
+		logging.LogErrorf("save configuration failed: %s", err)
+	}
+}
+func (conf *AppConf) SaveChecked() error {
 	if util.ReadOnly {
-		return
+		return fmt.Errorf("configuration is read only")
 	}
 
 	conf.m.Lock()
@@ -1157,12 +1163,12 @@ func (conf *AppConf) Save() {
 	plainData, err := gulu.JSON.MarshalJSON(conf)
 	if err != nil {
 		logging.LogErrorf("marshal conf failed: %s", err)
-		return
+		return err
 	}
 	snapshot := NewAppConf()
 	if err = gulu.JSON.UnmarshalJSON(plainData, snapshot); err != nil {
 		logging.LogErrorf("copy conf failed: %s", err)
-		return
+		return err
 	}
 	if snapshot.AI != nil {
 		snapshot.AI.EncryptAPIKeys()
@@ -1183,20 +1189,19 @@ func (conf *AppConf) Save() {
 	newData, err := gulu.JSON.MarshalIndentJSON(snapshot, "", "  ")
 	if err != nil {
 		logging.LogErrorf("marshal conf snapshot failed: %s", err)
-		return
+		return err
 	}
 	confPath := filepath.Join(util.ConfDir, "conf.json")
 	oldData, err := filelock.ReadFile(confPath)
 	if err != nil {
-		conf.save0(newData)
-		return
+		return filelock.WriteFile(confPath, newData)
 	}
 
 	if bytes.Equal(newData, oldData) {
-		return
+		return nil
 	}
 
-	conf.save0(newData)
+	return filelock.WriteFile(confPath, newData)
 }
 
 func (conf *AppConf) save0(data []byte) {

@@ -726,7 +726,7 @@ func (ai *AI) DecryptAPIKeys() {
 		if p == nil || p.APIKey == "" {
 			continue
 		}
-		dec := util.AESDecrypt(p.APIKey)
+		dec := util.UnsealLocal(p.APIKey)
 		if dec == nil {
 			continue
 		}
@@ -735,7 +735,7 @@ func (ai *AI) DecryptAPIKeys() {
 		}
 	}
 	if ai.Embedding != nil && ai.Embedding.APIKey != "" {
-		dec := util.AESDecrypt(ai.Embedding.APIKey)
+		dec := util.UnsealLocal(ai.Embedding.APIKey)
 		if dec == nil {
 			return
 		}
@@ -744,7 +744,7 @@ func (ai *AI) DecryptAPIKeys() {
 		}
 	}
 	if ai.Rerank != nil && ai.Rerank.APIKey != "" {
-		dec := util.AESDecrypt(ai.Rerank.APIKey)
+		dec := util.UnsealLocal(ai.Rerank.APIKey)
 		if dec == nil {
 			return
 		}
@@ -759,13 +759,13 @@ func (ai *AI) EncryptAPIKeys() {
 		if p == nil || p.APIKey == "" {
 			continue
 		}
-		p.APIKey = util.AESEncrypt(p.APIKey)
+		p.APIKey = util.SealLocal(p.APIKey)
 	}
 	if ai.Embedding != nil && ai.Embedding.APIKey != "" {
-		ai.Embedding.APIKey = util.AESEncrypt(ai.Embedding.APIKey)
+		ai.Embedding.APIKey = util.SealLocal(ai.Embedding.APIKey)
 	}
 	if ai.Rerank != nil && ai.Rerank.APIKey != "" {
-		ai.Rerank.APIKey = util.AESEncrypt(ai.Rerank.APIKey)
+		ai.Rerank.APIKey = util.SealLocal(ai.Rerank.APIKey)
 	}
 }
 

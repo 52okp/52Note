@@ -97,3 +97,16 @@ func ProviderToStr(provider int) string {
 	}
 	return "Unknown"
 }
+
+func IsSupportedSyncProvider(provider int) bool {
+	return provider == ProviderS3 || provider == ProviderWebDAV || provider == ProviderLocal
+}
+
+// NormalizeProvider 旧服务器同步配置转到未启用的 S3，保留第三方配置。
+func (s *Sync) NormalizeProvider() {
+	if s.Provider == ProviderSiYuan {
+		s.Provider = ProviderS3
+		s.Enabled = false
+		s.Perception = false
+	}
+}

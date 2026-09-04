@@ -84,7 +84,15 @@ func getUpdateRelease(force bool) (*updateRelease, error) {
 	if !isValidUpdateChannel(channel) {
 		return nil, errors.New("update channel is invalid")
 	}
-	return get52NoteUpdateRelease(channel, force)
+	release, primaryErr := get52NoteUpdateRelease(channel, force)
+	if primaryErr == nil && len(release.Packages) > 0 {
+		return release, nil
+	}
+	fallback, fallbackErr := getGitHubUpdateRelease(channel, force)
+	if fallbackErr == nil && len(fallback.Packages) > 0 {
+		return fallback, nil
+	}
+	return nil, errors.Join(primaryErr, fallbackErr, errors.New("no verified update package available"))
 }
 
 type backendLatestRelease struct {
@@ -92,23 +100,37 @@ type backendLatestRelease struct {
 	Channel string `json:"channel"`
 	Package struct {
 		Filename string `json:"filename"`
-		SHA256 string `json:"sha256"`
-		URL string `json:"url"`
+		SHA256   string `json:"sha256"`
+		URL      string `json:"url"`
 	} `json:"package"`
 }
 
 func get52NoteUpdateRelease(channel string, force bool) (*updateRelease, error) {
 	platform := ""
-	if gulu.OS.IsWindows() { platform = "windows" } else if gulu.OS.IsDarwin() { platform = "macos" }
-	if platform == "" { return &updateRelease{Packages: map[string]*updatePackage{}}, nil }
+	if gulu.OS.IsWindows() {
+		platform = "windows"
+	} else if gulu.OS.IsDarwin() {
+		platform = "macos"
+	}
+	if platform == "" {
+		return &updateRelease{Packages: map[string]*updatePackage{}}, nil
+	}
 	endpoint := fmt.Sprintf("%s?platform=%s&arch=%s&channel=%s", updateServiceURL, platform, runtime.GOARCH, channel)
-	if force { endpoint += fmt.Sprintf("&t=%d", time.Now().Unix()) }
+	if force {
+		endpoint += fmt.Sprintf("&t=%d", time.Now().Unix())
+	}
 	result := &backendLatestRelease{}
 	response, err := httpclient.NewCloudRequest30s().SetSuccessResult(result).Get(endpoint)
-	if err != nil { return nil, err }
-	if response.StatusCode != http.StatusOK { return nil, fmt.Errorf("get 52Note release failed: %d", response.StatusCode) }
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("get 52Note release failed: %d", response.StatusCode)
+	}
 	version := strings.TrimPrefix(normalizeReleaseVersion(result.Version), "v")
-	if !isReleaseAllowed(channel, version) { return nil, errors.New("no release is available for the update channel") }
+	if result.Channel != channel || !isReleaseAllowed(channel, version) {
+		return nil, errors.New("no release is available for the update channel")
+	}
 	release := &updateRelease{Version: version, ReleaseURL: "https://docs.52okp.com", Packages: map[string]*updatePackage{}}
 	expected := currentInstallPackageName(version)
 	checksum := normalizeSHA256(result.Package.SHA256)

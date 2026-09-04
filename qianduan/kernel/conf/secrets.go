@@ -55,7 +55,7 @@ func (s *Secrets) Encrypt() {
 		if item == nil || item.Value == "" {
 			continue
 		}
-		item.Value = util.AESEncrypt(item.Value)
+		item.Value = util.SealLocal(item.Value)
 	}
 }
 
@@ -69,7 +69,7 @@ func (s *Secrets) Decrypt() {
 		if item == nil || item.Value == "" {
 			continue
 		}
-		dec := util.AESDecrypt(item.Value)
+		dec := util.UnsealLocal(item.Value)
 		if dec == nil {
 			continue
 		}

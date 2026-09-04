@@ -2690,12 +2690,7 @@ func newRepository() (ret *dejavu.Repo, err error) {
 	var cloudRepo cloud.Cloud
 	switch Conf.Sync.Provider {
 	case conf.ProviderSiYuan:
-		user := Conf.GetUser()
-		if user == nil || user.UserWorkspaceID == "" {
-			err = errors.New(Conf.Language(18))
-			return
-		}
-		cloudRepo = new52NoteCloud(&cloud.BaseCloud{Conf: cloudConf}, user.UserWorkspaceID)
+		return nil, cloud.ErrUnsupported
 	case conf.ProviderS3:
 		// 显式注入 SiYuan UA，覆盖 aws SDK 默认 UA（含架构、Go 版本、SDK 版本等冗余信息），便于 S3 服务端按 SiYuan/ 前缀识别加白名单
 		s3HTTPClient := httpclient.NewUserAgentClient(httpclient.NewTransport(cloudConf.S3.SkipTlsVerify))
@@ -2957,11 +2952,6 @@ func buildCloudConf() (ret *cloud.Conf, err error) {
 	}
 
 	userId, token, availableSize := "0", "", int64(1024*1024*1024*1024*2)
-	if nil != Conf.User && conf.ProviderSiYuan == Conf.Sync.Provider {
-		u := Conf.GetUser()
-		userId = u.UserId
-		token = u.UserToken
-	}
 
 	ret = &cloud.Conf{
 		Dir:           Conf.Sync.CloudName,
@@ -2973,7 +2963,7 @@ func buildCloudConf() (ret *cloud.Conf, err error) {
 
 	switch Conf.Sync.Provider {
 	case conf.ProviderSiYuan:
-		ret.Endpoint = util.GetCloudSyncServer()
+		return nil, cloud.ErrUnsupported
 	case conf.ProviderS3:
 		ret.S3 = &cloud.ConfS3{
 			Endpoint:       Conf.Sync.S3.Endpoint,

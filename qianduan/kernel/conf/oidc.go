@@ -83,7 +83,8 @@ func (o *OIDC) EncryptClientSecret() {
 	if o == nil || o.ClientSecret == "" {
 		return
 	}
-	o.ClientSecret = util.AESEncrypt(o.ClientSecret)
+	// 本机静态凭据统一用每设备随机密钥加密（v2 前缀即幂等标记）。
+	o.ClientSecret = util.SealLocal(o.ClientSecret)
 }
 
 func (o *OIDC) DecryptClientSecret() {
@@ -91,6 +92,17 @@ func (o *OIDC) DecryptClientSecret() {
 		return
 	}
 	original := o.ClientSecret
+	if strings.HasPrefix(original, "v2:") {
+		// 新格式：每设备随机密钥（AES-256-GCM），SealLocal 写入。
+		decrypted := util.UnsealLocal(original)
+		if decrypted == nil {
+			return
+		}
+		if plain, err := hex.DecodeString(string(decrypted)); err == nil {
+			o.ClientSecret = string(plain)
+		}
+		return
+	}
 	encrypted, err := hex.DecodeString(original)
 	if err != nil || len(encrypted) == 0 || len(encrypted)%16 != 0 {
 		return

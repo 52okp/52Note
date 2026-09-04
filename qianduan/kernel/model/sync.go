@@ -19,10 +19,8 @@ package model
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -364,11 +362,7 @@ func checkSync(boot, exit, byHand bool) bool {
 
 	switch Conf.Sync.Provider {
 	case conf.ProviderSiYuan:
-		if !IsSubscriber() {
-			Conf.Sync.Enabled = false
-			Conf.Save()
-			return false
-		}
+		return false
 	case conf.ProviderWebDAV, conf.ProviderS3, conf.ProviderLocal:
 		if !IsPaidUser() {
 			Conf.Sync.Enabled = false
@@ -519,6 +513,9 @@ func SetSyncGenerateConflictDoc(b bool) {
 }
 
 func SetSyncEnable(b bool) {
+	if !conf.IsSupportedSyncProvider(Conf.Sync.Provider) {
+		b = false
+	}
 	Conf.Sync.Enabled = b
 	Conf.Save()
 	refreshLANSyncManager()
@@ -559,6 +556,9 @@ func SetSyncMode(mode int) {
 }
 
 func SetSyncProvider(provider int) (err error) {
+	if !conf.IsSupportedSyncProvider(provider) {
+		return cloud.ErrUnsupported
+	}
 	Conf.Sync.Provider = provider
 	Conf.Save()
 	refreshLANSyncManager()
@@ -974,122 +974,7 @@ func closeSyncWebSocket() {
 	logging.LogInfof("sync websocket closed")
 }
 
-func connectSyncWebSocket() {
-	defer logging.Recover()
-	// 52NoteAdmin 当前使用 Dejavu 的同步锁和定时/手动同步，不连接思源官方推送服务。
-	if !noteCloudPushEnabled {
-		return
-	}
-
-	if !Conf.Sync.Enabled || !IsSubscriber() || conf.ProviderSiYuan != Conf.Sync.Provider {
-		return
-	}
-
-	if util.ContainerDocker == util.Container {
-		return
-	}
-
-	webSocketConnLock.Lock()
-	defer webSocketConnLock.Unlock()
-
-	if nil != webSocketConn {
-		return
-	}
-
-	//logging.LogInfof("connecting sync websocket...")
-	var dialErr error
-	webSocketConn, dialErr = dialSyncWebSocket()
-	if nil != dialErr {
-		logging.LogWarnf("connect sync websocket failed: %s", dialErr)
-		return
-	}
-	logging.LogInfof("sync websocket connected")
-
-	webSocketConn.SetCloseHandler(func(code int, text string) error {
-		logging.LogWarnf("sync websocket closed: %d, %s", code, text)
-		return nil
-	})
-
-	go func() {
-		defer logging.Recover()
-
-		for {
-			result := gulu.Ret.NewResult()
-			if readErr := webSocketConn.ReadJSON(&result); nil != readErr {
-				time.Sleep(1 * time.Second)
-				if closedSyncWebSocket.Load() {
-					return
-				}
-
-				reconnected := false
-				for range 7 {
-					time.Sleep(7 * time.Second)
-					if nil == Conf.GetUser() {
-						return
-					}
-
-					//logging.LogInfof("reconnecting sync websocket...")
-					webSocketConn, dialErr = dialSyncWebSocket()
-					if nil != dialErr {
-						logging.LogWarnf("reconnect sync websocket failed: %s", dialErr)
-						continue
-					}
-
-					logging.LogInfof("sync websocket reconnected")
-					reconnected = true
-					break
-				}
-				if !reconnected {
-					logging.LogWarnf("reconnect sync websocket failed, do not retry")
-					webSocketConn = nil
-					return
-				}
-
-				continue
-			}
-
-			logging.LogInfof("sync websocket message: %v", result)
-			data := result.Data.(map[string]any)
-			switch data["cmd"].(string) {
-			case "synced":
-				// Improve data synchronization perception https://github.com/siyuan-note/siyuan/issues/13000
-				SyncDataDownload()
-			case "kernels":
-				onlineKernelsLock.Lock()
-
-				onlineKernels = []*OnlineKernel{}
-				for _, kernel := range data["kernels"].([]any) {
-					kernelMap := kernel.(map[string]any)
-					onlineKernels = append(onlineKernels, &OnlineKernel{
-						ID:       kernelMap["id"].(string),
-						Hostname: kernelMap["hostname"].(string),
-						OS:       kernelMap["os"].(string),
-						Ver:      kernelMap["ver"].(string),
-					})
-				}
-
-				onlineKernelsLock.Unlock()
-			}
-		}
-	}()
-}
+// 自有服务器同步已停用，不建立同步推送连接。
+func connectSyncWebSocket() { closeSyncWebSocket() }
 
 var KernelID = gulu.Rand.String(7)
-
-func dialSyncWebSocket() (c *websocket.Conn, err error) {
-	endpoint := util.GetCloudWebSocketServer() + "/apis/siyuan/dejavu/ws"
-	header := http.Header{
-		"User-Agent":        []string{util.UserAgent},
-		"x-siyuan-uid":      []string{Conf.GetUser().UserId},
-		"x-siyuan-kernel":   []string{KernelID},
-		"x-siyuan-ver":      []string{util.Ver},
-		"x-siyuan-os":       []string{runtime.GOOS},
-		"x-siyuan-hostname": []string{util.GetDeviceName()},
-		"x-siyuan-repo":     []string{Conf.Sync.CloudName},
-	}
-	c, _, err = websocket.DefaultDialer.Dial(endpoint, header)
-	if err == nil {
-		closedSyncWebSocket.Store(false)
-	}
-	return
-}

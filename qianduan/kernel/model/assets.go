@@ -1287,6 +1287,10 @@ const (
 
 // uploadAssets2Cloud 将资源文件上传到云端图床。
 func uploadAssets2Cloud(assetPaths []string, bizType string, ignorePushMsg bool) (count int, err error) {
+	// 图床上传依赖思源官方云，52Note 账号的令牌不能发给第三方服务器。
+	if err = guard52NoteAccount(); nil != err {
+		return
+	}
 	var uploadAbsAssets []string
 	for _, assetPath := range assetPaths {
 		var absPath string

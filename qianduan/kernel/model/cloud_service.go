@@ -39,8 +39,25 @@ import (
 
 var ErrFailedToConnectCloudServer = errors.New("failed to connect cloud server")
 
+// err52NoteUnsupported 是 52Note 自建账号触发官方云功能时的统一提示。
+var err52NoteUnsupported = errors.New("该功能依赖思源官方云服务，52Note 账号暂不支持")
+
+// guard52NoteAccount 拦截所有仍指向思源官方云的调用：52Note 自建账号的
+// 令牌绝不能作为 symphony Cookie 发送给第三方服务器。返回非 nil 时调用方
+// 应直接失败并把错误展示给用户。
+func guard52NoteAccount() error {
+	if user := Conf.GetUser(); nil != user && user.Is52NoteUser {
+		return err52NoteUnsupported
+	}
+	return nil
+}
+
 func CloudChatGPT(msg string, contextMsgs []string) (ret string, stop bool, err error) {
 	if nil == Conf.GetUser() {
+		return
+	}
+	if err = guard52NoteAccount(); nil != err {
+		stop = true
 		return
 	}
 
@@ -103,6 +120,9 @@ func StartFreeTrial() (err error) {
 	if nil == Conf.GetUser() {
 		return errors.New(Conf.Language(31))
 	}
+	if err = guard52NoteAccount(); nil != err {
+		return
+	}
 
 	requestResult := gulu.Ret.NewResult()
 	request := httpclient.NewCloudRequest30s()
@@ -128,6 +148,9 @@ func StartFreeTrial() (err error) {
 }
 
 func DeactivateUser() (err error) {
+	if err = guard52NoteAccount(); nil != err {
+		return
+	}
 	requestResult := gulu.Ret.NewResult()
 	request := httpclient.NewCloudRequest30s()
 	resp, err := request.
@@ -152,6 +175,9 @@ func DeactivateUser() (err error) {
 }
 
 func SetCloudBlockReminder(id, data string, timed int64) (err error) {
+	if err = guard52NoteAccount(); nil != err {
+		return
+	}
 	requestResult := gulu.Ret.NewResult()
 	payload := map[string]any{"dataId": id, "data": data, "timed": timed}
 	request := httpclient.NewCloudRequest30s()
@@ -181,6 +207,9 @@ var uploadToken = ""
 var uploadTokenTime int64
 
 func LoadUploadToken() (err error) {
+	if err = guard52NoteAccount(); nil != err {
+		return
+	}
 	now := time.Now().Unix()
 	if 3600 >= now-uploadTokenTime {
 		return
@@ -330,6 +359,11 @@ func refreshAnnouncement() {
 }
 
 func RefreshUser(token string) {
+	noteAccountLock.Lock()
+	defer noteAccountLock.Unlock()
+	if err := guard52NoteAccount(); nil != err {
+		return
+	}
 	previousUserID := ""
 	if previousUser := Conf.GetUser(); nil != previousUser {
 		previousUserID = previousUser.UserId
@@ -366,6 +400,9 @@ func RefreshUser(token string) {
 	}
 
 Net:
+	if err := guard52NoteAccount(); err != nil {
+		return
+	}
 	start := time.Now()
 	user, err := getUser(token)
 	if err != nil {
@@ -396,7 +433,8 @@ Net:
 
 	Conf.SetUser(user)
 	data, _ := gulu.JSON.MarshalJSON(user)
-	Conf.UserData = util.AESEncrypt(string(data))
+	// 与 52Note 登录态一致：本机静态数据统一用每设备随机密钥加密。
+	Conf.UserData = util.SealLocal(string(data))
 	Conf.Save()
 	if previousUserID != user.UserId {
 		refreshLANSyncManager()
@@ -412,8 +450,15 @@ func loadUserFromConf() *conf.User {
 		return nil
 	}
 
-	data := util.AESDecrypt(Conf.UserData)
+	data := util.UnsealLocal(Conf.UserData)
 	data, _ = hex.DecodeString(string(data))
+	var source map[string]any
+	if err := gulu.JSON.UnmarshalJSON(data, &source); err != nil {
+		return nil
+	}
+	if _, ok := source["is52NoteUser"].(bool); !ok {
+		return nil
+	}
 	user := &conf.User{}
 	if err := gulu.JSON.UnmarshalJSON(data, &user); err == nil {
 		return user
@@ -422,6 +467,9 @@ func loadUserFromConf() *conf.User {
 }
 
 func RemoveCloudShorthands(ids []string) (err error) {
+	if err = guard52NoteAccount(); nil != err {
+		return
+	}
 	result := map[string]any{}
 	request := httpclient.NewCloudRequest30s()
 	body := map[string]any{
@@ -453,6 +501,9 @@ func RemoveCloudShorthands(ids []string) (err error) {
 }
 
 func GetCloudShorthand(id string) (ret map[string]any, err error) {
+	if err = guard52NoteAccount(); nil != err {
+		return
+	}
 	result := map[string]any{}
 	request := httpclient.NewCloudRequest30s()
 	resp, err := request.
@@ -494,6 +545,9 @@ func GetCloudShorthand(id string) (ret map[string]any, err error) {
 }
 
 func GetCloudShorthands(page int) (result map[string]any, err error) {
+	if err = guard52NoteAccount(); nil != err {
+		return
+	}
 	result = map[string]any{}
 	request := httpclient.NewCloudRequest30s()
 	resp, err := request.
@@ -589,6 +643,9 @@ func getUser(token string) (*conf.User, error) {
 }
 
 func UseActivationcode(code string) (err error) {
+	if err = guard52NoteAccount(); nil != err {
+		return
+	}
 	code = util.RemoveInvalid(code)
 	code = strings.TrimSpace(code)
 	if "" == code {
@@ -616,6 +673,9 @@ func UseActivationcode(code string) (err error) {
 }
 
 func CheckActivationcode(code string) (retCode int, msg string) {
+	if err := guard52NoteAccount(); nil != err {
+		return 1, err.Error()
+	}
 	code = util.RemoveInvalid(code)
 	code = strings.TrimSpace(code)
 	if "" == code {
@@ -709,6 +769,8 @@ func Login2fa(token, code string) (map[string]any, error) {
 }
 
 func LogoutUser() {
+	noteAccountLock.Lock()
+	defer noteAccountLock.Unlock()
 	hadUser := nil != Conf.GetUser()
 	Conf.UserData = ""
 	Conf.SetUser(nil)

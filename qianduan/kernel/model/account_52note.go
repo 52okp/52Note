@@ -14,10 +14,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/88250/gulu"
@@ -26,6 +25,8 @@ import (
 )
 
 const noteAccountServer = "https://docs.52okp.com"
+
+var noteAccountLock sync.Mutex
 
 var noteAccountHTTPClient = &http.Client{Timeout: 30 * time.Second}
 
@@ -45,15 +46,6 @@ type noteAccountTokens struct {
 type noteAccountResult struct {
 	User   noteAccountUser   `json:"user"`
 	Tokens noteAccountTokens `json:"tokens"`
-}
-
-type noteWorkspace struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type noteWorkspaceList struct {
-	Workspaces []noteWorkspace `json:"workspaces"`
 }
 
 type noteAccountError struct {
@@ -102,8 +94,9 @@ func Register52Note(email, password, displayName string) error {
 
 // VerifyRegistration52Note 提交注册邮箱验证码：通过即创建会话并登录。
 func VerifyRegistration52Note(email, code string) error {
-	payload := account52NotePayload(email, "", "")
-	payload["code"] = strings.TrimSpace(code)
+	noteAccountLock.Lock()
+	defer noteAccountLock.Unlock()
+	payload := account52NoteCodePayload(email, code)
 	var result noteAccountResult
 	if err := request52Note(http.MethodPost, "/api/v1/auth/register/verify", payload, "", &result); err != nil {
 		return err
@@ -119,6 +112,8 @@ func ResendRegistrationCode52Note(email string) error {
 }
 
 func Login52Note(email, password string) error {
+	noteAccountLock.Lock()
+	defer noteAccountLock.Unlock()
 	payload := account52NotePayload(email, password, "")
 	var result noteAccountResult
 	if err := request52Note(http.MethodPost, "/api/v1/auth/login", payload, "", &result); err != nil {
@@ -129,16 +124,15 @@ func Login52Note(email, password string) error {
 
 // RequestLoginCode52Note 请求邮箱登录验证码。
 func RequestLoginCode52Note(email string) error {
-	payload := account52NotePayload(email, "", "")
-	delete(payload, "password")
-	delete(payload, "display_name")
+	payload := account52NoteEmailPayload(email)
 	return request52Note(http.MethodPost, "/api/v1/auth/login-code/request", payload, "", nil)
 }
 
 // LoginWithCode52Note 用邮箱验证码登录。
 func LoginWithCode52Note(email, code string) error {
-	payload := account52NotePayload(email, "", "")
-	payload["code"] = strings.TrimSpace(code)
+	noteAccountLock.Lock()
+	defer noteAccountLock.Unlock()
+	payload := account52NoteCodePayload(email, code)
 	var result noteAccountResult
 	if err := request52Note(http.MethodPost, "/api/v1/auth/login-code/confirm", payload, "", &result); err != nil {
 		return err
@@ -162,53 +156,25 @@ func ResetPassword52Note(email, code, newPassword string) error {
 	}, "", nil)
 }
 
-func account52NotePayload(email, password, displayName string) map[string]string {
-	hostname, _ := os.Hostname()
-	if strings.TrimSpace(hostname) == "" {
-		hostname = "52Note"
-	}
-	payload := map[string]string{
-		"email":        strings.TrimSpace(email),
-		"display_name": strings.TrimSpace(displayName),
-		"device_name":  hostname,
-		"platform":     account52NotePlatform(),
-	}
-	if password != "" {
-		payload["password"] = password
-	}
-	return payload
-}
-
-// activate52Note 校验通过后初始化工作空间并持久化登录态。
+// activate52Note 校验令牌并持久化登录态。
 func activate52Note(result noteAccountResult) error {
 	if result.Tokens.AccessToken == "" || result.Tokens.RefreshToken == "" {
 		return errors.New(localize52NoteAccountError("invalid_token", "token is invalid or expired"))
 	}
-	workspaceID, err := ensure52NoteWorkspace(result.Tokens.AccessToken)
-	if err != nil {
-		_ = request52Note(http.MethodPost, "/api/v1/auth/logout", map[string]string{
-			"refresh_token": result.Tokens.RefreshToken,
-		}, "", nil)
-		return err
-	}
-	store52NoteUser(result.User, result.Tokens, workspaceID)
-	return nil
-}
-
-func account52NotePlatform() string {
-	switch runtime.GOOS {
-	case "darwin":
-		return "macos"
-	case "windows", "android", "ios", "linux":
-		return runtime.GOOS
-	default:
-		return "other"
-	}
+	return store52NoteUser(result.User, result.Tokens)
 }
 
 func Refresh52NoteUser(accessToken string) error {
+	noteAccountLock.Lock()
+	defer noteAccountLock.Unlock()
 	current := Conf.GetUser()
-	if current == nil {
+	if current == nil || !current.Is52NoteUser {
+		return nil
+	}
+	if err := Conf.SaveChecked(); err != nil {
+		return err
+	}
+	if accessToken != "" && accessToken != current.UserToken {
 		return nil
 	}
 	if accessToken == "" {
@@ -217,21 +183,14 @@ func Refresh52NoteUser(accessToken string) error {
 	var user noteAccountUser
 	err := request52Note(http.MethodGet, "/api/v1/users/me", nil, accessToken, &user)
 	if err == nil {
-		workspaceID := current.UserWorkspaceID
-		if workspaceID == "" {
-			workspaceID, err = ensure52NoteWorkspace(accessToken)
-			if err != nil {
-				return err
-			}
-		}
-		store52NoteUser(user, noteAccountTokens{
+		return store52NoteUser(user, noteAccountTokens{
 			AccessToken:  current.UserToken,
 			RefreshToken: current.UserRefreshToken,
 			ExpiresAt:    parse52NoteExpiry(current.UserTokenExpireTime),
-		}, workspaceID)
-		return nil
+		})
 	}
-	if current.UserRefreshToken == "" {
+	var responseError *noteHTTPError
+	if !errors.As(err, &responseError) || responseError.Status != http.StatusUnauthorized || current.UserRefreshToken == "" {
 		return err
 	}
 	var tokens noteAccountTokens
@@ -240,23 +199,23 @@ func Refresh52NoteUser(accessToken string) error {
 	}, "", &tokens); refreshErr != nil {
 		return refreshErr
 	}
+	if tokens.AccessToken == "" || tokens.RefreshToken == "" {
+		return errors.New("invalid refresh response")
+	}
+	if err = store52NoteUser(noteAccountUser{ID: current.UserId, Email: current.UserName, DisplayName: current.UserNickname}, tokens); err != nil {
+		return err
+	}
 	if err = request52Note(http.MethodGet, "/api/v1/users/me", nil, tokens.AccessToken, &user); err != nil {
 		return err
 	}
-	workspaceID := current.UserWorkspaceID
-	if workspaceID == "" {
-		workspaceID, err = ensure52NoteWorkspace(tokens.AccessToken)
-		if err != nil {
-			return err
-		}
-	}
-	store52NoteUser(user, tokens, workspaceID)
-	return nil
+	return store52NoteUser(user, tokens)
 }
 
 func Logout52Note() {
+	noteAccountLock.Lock()
+	defer noteAccountLock.Unlock()
 	user := Conf.GetUser()
-	if user != nil && user.UserRefreshToken != "" {
+	if user != nil && user.Is52NoteUser && user.UserRefreshToken != "" {
 		_ = request52Note(http.MethodPost, "/api/v1/auth/logout", map[string]string{
 			"refresh_token": user.UserRefreshToken,
 		}, "", nil)
@@ -296,9 +255,9 @@ func request52Note(method, endpoint string, payload any, accessToken string, des
 		var apiError noteAccountError
 		_ = json.NewDecoder(response.Body).Decode(&apiError)
 		if apiError.Message != "" {
-			return errors.New(localize52NoteAccountError(apiError.Code, apiError.Message))
+			return &noteHTTPError{Status: response.StatusCode, Message: localize52NoteAccountError(apiError.Code, apiError.Message)}
 		}
-		return fmt.Errorf("%s: HTTP %d", Conf.Language(18), response.StatusCode)
+		return &noteHTTPError{Status: response.StatusCode, Message: fmt.Sprintf("%s: HTTP %d", Conf.Language(18), response.StatusCode)}
 	}
 	if destination == nil || response.StatusCode == http.StatusNoContent {
 		return nil
@@ -306,22 +265,7 @@ func request52Note(method, endpoint string, payload any, accessToken string, des
 	return json.NewDecoder(response.Body).Decode(destination)
 }
 
-func ensure52NoteWorkspace(accessToken string) (string, error) {
-	var list noteWorkspaceList
-	if err := request52Note(http.MethodGet, "/api/v1/workspaces", nil, accessToken, &list); err != nil {
-		return "", err
-	}
-	if len(list.Workspaces) > 0 {
-		return list.Workspaces[0].ID, nil
-	}
-	var workspace noteWorkspace
-	if err := request52Note(http.MethodPost, "/api/v1/workspaces", map[string]string{"name": "main"}, accessToken, &workspace); err != nil {
-		return "", err
-	}
-	return workspace.ID, nil
-}
-
-func store52NoteUser(user noteAccountUser, tokens noteAccountTokens, workspaceID string) {
+func store52NoteUser(user noteAccountUser, tokens noteAccountTokens) error {
 	current := &conf.User{
 		UserId:              user.ID,
 		UserName:            user.Email,
@@ -329,21 +273,35 @@ func store52NoteUser(user noteAccountUser, tokens noteAccountTokens, workspaceID
 		UserCreateTime:      user.CreatedAt.Format(time.RFC3339),
 		UserToken:           tokens.AccessToken,
 		UserRefreshToken:    tokens.RefreshToken,
-		UserWorkspaceID:     workspaceID,
 		UserTokenExpireTime: strconv.FormatInt(tokens.ExpiresAt.Unix(), 10),
 		// 复用当前内核对官方同步提供商的功能开关。52Note 的订阅和配额由自有后端管理，
 		// 不读取思源官方账号的订阅字段。
 		UserSiYuanProExpireTime:      -1,
 		UserSiYuanSubscriptionStatus: 0,
 		UserTitles:                   []*conf.UserTitle{},
+		Is52NoteUser:                 true,
+	}
+
+	data, _ := gulu.JSON.MarshalJSON(current)
+	// 登录态只在本机 conf.json 落盘，使用每设备随机密钥加密，
+	// 不再使用随源码公开的固定密钥（详见审查报告 S2）。
+	sealed := util.SealLocal(string(data))
+	if sealed == "" {
+		return errors.New("could not encrypt session")
 	}
 	Conf.SetUser(current)
-	data, _ := gulu.JSON.MarshalJSON(current)
-	Conf.UserData = util.AESEncrypt(string(data))
-	Conf.Save()
+	Conf.UserData = sealed
+	return Conf.SaveChecked()
 }
 
 func parse52NoteExpiry(value string) time.Time {
 	seconds, _ := strconv.ParseInt(value, 10, 64)
 	return time.Unix(seconds, 0)
 }
+
+type noteHTTPError struct {
+	Status  int
+	Message string
+}
+
+func (e *noteHTTPError) Error() string { return e.Message }

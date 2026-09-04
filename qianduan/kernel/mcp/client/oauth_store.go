@@ -57,6 +57,7 @@ type oauthCredentialData struct {
 var oauthCredentialStore = struct {
 	sync.Mutex
 	loaded      bool
+	loadErr     error
 	credentials []oauthCredential
 }{}
 
@@ -64,14 +65,19 @@ func loadOAuthCredentialsLocked() {
 	if oauthCredentialStore.loaded {
 		return
 	}
-	oauthCredentialStore.loaded = true
+	oauthCredentialStore.loadErr = fmt.Errorf("stored OAuth credentials could not be loaded")
 	oauthCredentialStore.credentials = []oauthCredential{}
-	if model.Conf == nil || model.Conf.GetMCPOAuth() == "" {
+	if model.Conf == nil {
+		return
+	}
+	if model.Conf.GetMCPOAuth() == "" {
+		oauthCredentialStore.loaded = true
+		oauthCredentialStore.loadErr = nil
 		return
 	}
 
 	ciphertext := model.Conf.GetMCPOAuth()
-	if len(ciphertext)%32 != 0 {
+	if !strings.HasPrefix(ciphertext, "v2:") && len(ciphertext)%32 != 0 {
 		logging.LogWarnf("mcp oauth: ignored malformed encrypted credentials")
 		return
 	}
@@ -90,6 +96,8 @@ func loadOAuthCredentialsLocked() {
 		return
 	}
 	oauthCredentialStore.credentials = data.Credentials
+	oauthCredentialStore.loaded = true
+	oauthCredentialStore.loadErr = nil
 }
 
 func decryptOAuthCredentials(ciphertext string) (decrypted []byte) {
@@ -99,10 +107,15 @@ func decryptOAuthCredentials(ciphertext string) (decrypted []byte) {
 			decrypted = nil
 		}
 	}()
-	return util.AESDecrypt(ciphertext)
+	return util.UnsealLocal(ciphertext)
 }
 
-func persistOAuthCredentialsLocked() error {
+func persistOAuthCredentialsLocked() (err error) {
+	defer func() {
+		if err != nil {
+			oauthCredentialStore.loaded = false
+		}
+	}()
 	if model.Conf == nil {
 		return fmt.Errorf("configuration is not initialized")
 	}
@@ -110,7 +123,14 @@ func persistOAuthCredentialsLocked() error {
 	if err != nil {
 		return err
 	}
-	model.Conf.SetMCPOAuth(util.AESEncrypt(string(data)))
+	sealed := util.SealLocal(string(data))
+	if sealed == "" {
+		return fmt.Errorf("OAuth encryption failed")
+	}
+	model.Conf.SetMCPOAuth(sealed)
+	if err = model.Conf.SaveChecked(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -135,6 +155,9 @@ func putOAuthCredential(credential oauthCredential) error {
 	oauthCredentialStore.Lock()
 	defer oauthCredentialStore.Unlock()
 	loadOAuthCredentialsLocked()
+	if oauthCredentialStore.loadErr != nil {
+		return oauthCredentialStore.loadErr
+	}
 	filtered := oauthCredentialStore.credentials[:0]
 	for _, item := range oauthCredentialStore.credentials {
 		itemEndpoint := item.Endpoint
@@ -158,6 +181,9 @@ func removeOAuthCredential(serverID, resource, issuer string) error {
 	oauthCredentialStore.Lock()
 	defer oauthCredentialStore.Unlock()
 	loadOAuthCredentialsLocked()
+	if oauthCredentialStore.loadErr != nil {
+		return oauthCredentialStore.loadErr
+	}
 	filtered := oauthCredentialStore.credentials[:0]
 	for _, credential := range oauthCredentialStore.credentials {
 		if credential.ServerID == serverID && (resource == "" || credential.Resource == resource) && (issuer == "" || credential.Issuer == issuer) {
@@ -173,6 +199,9 @@ func markOAuthCredentialRejected(serverID, endpoint string) error {
 	oauthCredentialStore.Lock()
 	defer oauthCredentialStore.Unlock()
 	loadOAuthCredentialsLocked()
+	if oauthCredentialStore.loadErr != nil {
+		return oauthCredentialStore.loadErr
+	}
 	for i := len(oauthCredentialStore.credentials) - 1; i >= 0; i-- {
 		credential := &oauthCredentialStore.credentials[i]
 		credentialEndpoint := credential.Endpoint
